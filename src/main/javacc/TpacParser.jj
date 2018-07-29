@@ -1,0 +1,450 @@
+PARSER_BEGIN(TpacParser)
+
+package io.github.longfish801.tpac.parser;
+
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
+import io.github.longfish801.tpac.TpacMakerIF;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * TPAC文書を解析します。
+ * @version 1.0.00 2016/03/10
+ * @author io.github.longfish801
+ */
+public class TpacParser {
+	/** ログ出力インスタンス */
+	private static final Logger LOG = LoggerFactory.getLogger(TpacParser.class);
+	/** 行番号 */
+	private int lineNo = -1;
+	/** TpacMakerIF */
+	private TpacMakerIF maker = null;
+	/** 親要素のタグ＆名前の重複チェック用マップ */
+	private Map<String, Integer> parentNameMaps = null;
+	/** 子要素のタグ＆名前の重複チェック用マップ */
+	private Map<String, Integer> childNameMaps = null;
+	/** 属性のタグの重複チェック用マップ */
+	private Map<String, Integer> attrTagMaps = null;
+
+	/**
+	 * TPAC文書を解析します。
+	 * @param maker TpacMakerIF
+	 * @return TPAC文書の解析結果
+	 * @exception ParseException 構文誤りがみつかりました
+	 */
+	public Object parse(TpacMakerIF maker) throws ParseException {
+		this.maker = maker;
+		try {
+			root();
+		} catch (TokenMgrError exc){
+			LOG.error("TPAC文書の" + lineNo + "行目を解析中に字句誤りがみつかりました。exc=" + exc.toString());
+			throw exc;
+		} catch (ParseException exc){
+			LOG.error("TPAC文書の" + lineNo + "行目を解析中に構文誤りがみつかりました。exc=" + exc.toString());
+			throw exc;
+		} catch (Throwable exc){
+			LOG.error("TPAC文書の" + lineNo + "行目を解析中に問題が生じました。exc=" + exc.toString());
+			throw exc;
+		}
+		return maker.getResult();
+	}
+}
+PARSER_END(TpacParser)
+
+TOKEN : {
+	< NEWLINE	: "\r\n" | "\n" | "\r" >
+|	< SIGNDEC	: "#! " >
+|	< SIGNPRNT	: "## " >
+|	< SIGNCHLD	: "# " >
+|	< SIGNATTR	: "#-" >
+|	< SHARP		: "#" >
+|	< EXCLAM	: "!" >
+|	< HYPHEN	: "-" >
+|	< SPACE		: " " >
+|	< SAFETXT	: (~[ "\n", "\r", "#", "!", "-", " " ])+ >
+}
+
+	/**
+	 * TPAC文書全体を解析します。
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void root() : {
+		lineNo = 1;
+		parentNameMaps = new HashMap<String, Integer>();
+	}
+{
+	decPart() ( tagPart() )* <EOF>
+}
+
+	/**
+	 * 宣言の領域を解析します。
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void decPart() : {
+		StringBuilder buffer = new StringBuilder("");
+	}
+{
+	( dec() ) ( attr() )* ( LOOKAHEAD(1) textPart(buffer) )*
+	{
+		// 宣言にテキスト要素を作成します
+		String text = buffer.toString();
+		if (!text.isEmpty()){
+			maker.createText(text, lineNo);
+		}
+	}
+}
+
+	/**
+	 * 親あるいは子の定義領域を解析します。
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void tagPart() : {
+		StringBuilder buffer = new StringBuilder("");
+	}
+{
+	( parent() | child() ) ( attr() )* ( LOOKAHEAD(1) textPart(buffer) )*
+	{
+		// 親要素あるいは子要素にテキスト要素を作成します
+		String text = buffer.toString();
+		if (!text.isEmpty()){
+			maker.createText(text, lineNo);
+		}
+	}
+}
+
+	/**
+	 * 宣言要素を解析します。
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void dec() : {
+		String tag = "";
+		String name = "";
+	}
+{
+	<SIGNDEC> tag = validTagName() ( <SPACE> name = validName() )? newLine()
+	{
+		// ルート要素を作成します
+		LOG.debug("dec tag={} name={}", tag, name);
+		maker.createRoot(tag, name, lineNo);
+		attrTagMaps = new HashMap<String, Integer>();
+	}
+}
+
+	/**
+	 * 親要素を解析します。
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void parent() : {
+		String tag = "";
+		String name = "";
+	}
+{
+	<SIGNPRNT> tag = validTagName() ( <SPACE> name = validName() )? newLine()
+	{
+		LOG.debug("parent tag={} name={}", tag, name);
+		
+		// 親要素の名前に重複がないかチェックします
+		String combiKey = tag + "#" + name;
+		if (parentNameMaps.containsKey(combiKey)){
+			throw new ParseException("指定された名前(" + tag + " " + name + ")は、" + parentNameMaps.get(combiKey).toString() + "行目に定義された親要素の名前と重複しています。行番号=" + lineNo);
+		} else {
+			parentNameMaps.put(combiKey, Integer.valueOf(lineNo));
+		}
+		childNameMaps = new HashMap<String, Integer>();
+		attrTagMaps = new HashMap<String, Integer>();
+		
+		// 親要素を作成します
+		maker.createParent(tag, name, lineNo);
+	}
+}
+
+	/**
+	 * 子要素を解析します。
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void child() : {
+		String tag = "";
+		String name = "";
+	}
+{
+	<SIGNCHLD>  tag = validTagName() ( <SPACE> name = validName() )? newLine()
+	{
+		LOG.debug("child tag={} name={}", tag, name);
+		
+		// 親要素が作成されているか確認します
+		if (parentNameMaps.size() == 0){
+			throw new ParseException("子要素(" + tag + " " + name + ")を定義するには、事前にその親要素を定義している必要があります。行番号=" + lineNo);
+		}
+		
+		// 子要素の名前に重複がないかチェックします
+		String combiKey = tag + "#" + name;
+		if (childNameMaps.containsKey(combiKey)){
+			throw new ParseException("指定された名前(" + tag + " " + name + ")は、" + childNameMaps.get(combiKey).toString() + "行目に定義された親要素の名前と重複しています。行番号=" + lineNo);
+		} else {
+			childNameMaps.put(combiKey, Integer.valueOf(lineNo));
+		}
+		attrTagMaps = new HashMap<String, Integer>();
+		
+		// 子要素を作成します
+		maker.createChild(tag, name, lineNo);
+	}
+}
+
+	/**
+	 * 属性のひとつを解析します。
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void attr() : {
+		String key = "";
+		String value = "";
+	}
+{
+	<SIGNATTR> key = validAttrName() ( <SPACE> value = validAttrValue() )? newLine()
+	{
+		LOG.debug("attr key={} value={}", key, value);
+		
+		// 属性のタグに重複がないかチェックします
+		if (attrTagMaps.containsKey(key)){
+			throw new ParseException("指定された名前(" + key + " " + value + ")は、" + attrTagMaps.get(key).toString() + "行目に定義された親要素の名前と重複しています。行番号=" + lineNo);
+		} else {
+			attrTagMaps.put(key, Integer.valueOf(lineNo));
+		}
+		
+		// 属性を作成します
+		maker.createAttr(key, value, lineNo);
+	}
+}
+
+	/**
+	 * テキスト領域の一行を解析します。<br>
+	 * 文字列がある場合と空行のどちらかとなります。
+	 * @param buffer テキスト要素へ格納する文字列
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void textPart(StringBuilder buffer) : {
+	}
+{
+	( validTextLine(buffer) )? newLine()
+	{
+		buffer.append("\n");
+	}
+}
+
+	/**
+	 * タグ名、属性名に使用できる文字列を解析します。
+	 * @param buffer テキスト要素へ格納する文字列
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	String validTagName() : {
+		StringBuilder buffer = new StringBuilder("");
+	}
+{
+	( charExlam(buffer) | charHyphen(buffer) | safeTxt(buffer) )+
+	{
+		return buffer.toString();
+	}
+}
+
+	/**
+	 * 名前に使用できる文字列を解析します。
+	 * @param buffer テキスト要素へ格納する文字列
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	String validName() : {
+		StringBuilder buffer = new StringBuilder("");
+	}
+{
+	( charExlam(buffer) | charHyphen(buffer) | safeTxt(buffer) )+
+	{
+		return buffer.toString();
+	}
+}
+
+	/**
+	 * 属性名に使用できる文字列を解析します。
+	 * @param buffer テキスト要素へ格納する文字列
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	String validAttrName() : {
+		StringBuilder buffer = new StringBuilder("");
+	}
+{
+	( charExlam(buffer) | charHyphen(buffer) | safeTxt(buffer) )+
+	{
+		return buffer.toString();
+	}
+}
+
+	/**
+	 * 属性値を解析します。
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	String validAttrValue() : {
+		StringBuilder buffer = new StringBuilder("");
+	}
+{
+	( signDec(buffer) | signPrnt(buffer) | signChld(buffer) | signAttr(buffer) | charSharp(buffer) | charExlam(buffer) | charHyphen(buffer) | charSpace(buffer) | safeTxt(buffer) )+
+	{
+		return buffer.toString();
+	}
+}
+
+	/**
+	 * テキストの一行を解析します。
+	 * @param buffer テキスト要素へ格納する文字列
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void validTextLine(StringBuilder buffer) : {
+	}
+{
+	( charExlam(buffer) | charHyphen(buffer) | charSpace(buffer) | safeTxt(buffer) ) ( signDec(buffer) | signPrnt(buffer) | signChld(buffer) | signAttr(buffer) | charSharp(buffer) | charExlam(buffer) | charHyphen(buffer) | charSpace(buffer) | safeTxt(buffer) )*
+}
+
+	/**
+	 * 宣言識別子を解析します。
+	 * @param buffer テキスト要素へ格納する文字列
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void signDec(StringBuilder buffer) : {
+		Token token;
+	}
+{
+	token = <SIGNDEC>
+	{
+		buffer.append(token.image);
+	}
+}
+
+	/**
+	 * 親要素識別子を解析します。
+	 * @param buffer テキスト要素へ格納する文字列
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void signPrnt(StringBuilder buffer) : {
+		Token token;
+	}
+{
+	token = <SIGNPRNT>
+	{
+		buffer.append(token.image);
+	}
+}
+
+	/**
+	 * 子要素識別子を解析します。
+	 * @param buffer テキスト要素へ格納する文字列
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void signChld(StringBuilder buffer) : {
+		Token token;
+	}
+{
+	token = <SIGNCHLD>
+	{
+		buffer.append(token.image);
+	}
+}
+
+	/**
+	 * 属性識別子を解析します。
+	 * @param buffer テキスト要素へ格納する文字列
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void signAttr(StringBuilder buffer) : {
+		Token token;
+	}
+{
+	token = <SIGNATTR>
+	{
+		buffer.append(token.image);
+	}
+}
+
+	/**
+	 * 半角シャープ記号を解析します。
+	 * @param buffer テキスト要素へ格納する文字列
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void charSharp(StringBuilder buffer) : {
+		Token token;
+	}
+{
+	token = <SHARP>
+	{
+		buffer.append(token.image);
+	}
+}
+
+	/**
+	 * 半角エクスクラメーション記号を解析します。
+	 * @param buffer テキスト要素へ格納する文字列
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void charExlam(StringBuilder buffer) : {
+		Token token;
+	}
+{
+	token = <EXCLAM>
+	{
+		buffer.append(token.image);
+	}
+}
+
+	/**
+	 * 半角ハイフン記号を解析します。
+	 * @param buffer テキスト要素へ格納する文字列
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void charHyphen(StringBuilder buffer) : {
+		Token token;
+	}
+{
+	token = <HYPHEN>
+	{
+		buffer.append(token.image);
+	}
+}
+
+	/**
+	 * 半角スペース記号を解析します。
+	 * @param buffer テキスト要素へ格納する文字列
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void charSpace(StringBuilder buffer) : {
+		Token token;
+	}
+{
+	token = <SPACE>
+	{
+		buffer.append(token.image);
+	}
+}
+
+	/**
+	 * 特殊な文字を含まない文字列を解析します。
+	 * @param buffer テキスト要素へ格納する文字列
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void safeTxt(StringBuilder buffer) : {
+		Token token;
+	}
+{
+	token = <SAFETXT>
+	{
+		buffer.append(token.image);
+	}
+}
+
+	/**
+	 * 改行を解析します。
+	 * @exception ParseException 対象文字列がTPAC記法に違反しています。
+	 */
+	void newLine() : {
+		lineNo ++;
+	}
+{
+	<NEWLINE>
+}
+

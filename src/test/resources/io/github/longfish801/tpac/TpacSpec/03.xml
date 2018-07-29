@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tpac name="TPAC文書">
+  <parent name="">
+    <child name="子１" />
+  </parent>
+  <parent name="親２">
+    <child name="" />
+  </parent>
+</tpac>

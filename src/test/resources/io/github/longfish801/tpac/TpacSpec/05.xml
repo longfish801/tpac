@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<washscr name="テスト">これはテストです。
+
+  <between name="ハイフン区切り" bgn="テストここから" end="ここまでテスト" include="true">
+
+    <replace name="サンプル">テスト	サンプル #! 注意
+
+</replace>
+  </between>
+  <between name="ハイフン区切り以外" bgn="サンプルここから" end="ここまでサンプル" reverse="true">ここで #23を参照。
+
+さて、どうなるか。
+
+    <replace name="試験">サンプル	試験!
+</replace>
+  </between>
+</washscr>

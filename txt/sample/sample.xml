@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dec name="ルート">
+  <parent1 name="親名１">
+</parent1>
+  <parent2 name="親名２" attr1="属性値１" attr2="">
+サンプルテキストあ
+サンプルテキストい
+サンプルテキストう
+
+
+    <child1 name="子名１">サンプルテキストか
+サンプルテキストき
+サンプルテキストく
+
+</child1>
+    <child2 name="子名２" attr3="属性値３" />
+  </parent2>
+</dec>

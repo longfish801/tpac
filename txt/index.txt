@@ -1,0 +1,19 @@
+
+【＃タイトル】tpac
+
+■概要
+
+　TPAC文書を扱います。
+　TPAC記法は、改行を含む長めの文章や、親子関係を簡単に記述するための記法です。
+
+■ドキュメント
+
+・【リンク：TPAC記法：tpac.html】
+
+■API仕様書
+
+　API仕様書(Groovydoc)は以下を参照してください。
+
+・【リンク：Groovydoc：groovydoc/index.html】
+
+以上
