@@ -6,7 +6,7 @@
 package io.github.longfish801.tpac.element;
 
 import groovy.util.logging.Slf4j;
-import io.github.longfish801.shared.util.PackageDirectory;
+import io.github.longfish801.shared.PackageDirectory;
 import spock.lang.Specification;
 import spock.lang.Unroll;
 

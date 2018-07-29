@@ -6,8 +6,8 @@
 package io.github.longfish801.tpac;
 
 import groovy.util.logging.Slf4j;
-import io.github.longfish801.shared.lang.ExistResource;
-import io.github.longfish801.shared.util.PackageDirectory;
+import io.github.longfish801.shared.ExchangeResource;
+import io.github.longfish801.shared.PackageDirectory;
 import spock.lang.Specification;
 import spock.lang.Unroll;
 
@@ -30,7 +30,7 @@ class TpacSpec extends Specification {
 	
 	def 'URL先の内容をTPAC文書とみなして解析結果を保持するコンストラクタです'(){
 		when:
-		new Tpac(new ExistResource(TpacSpec.class).get('TpacSpec/toStr.tpac'));
+		new Tpac(ExchangeResource.url(TpacSpec.class, 'TpacSpec/toStr.tpac'));
 		then:
 		noExceptionThrown();
 	}
@@ -52,7 +52,7 @@ class TpacSpec extends Specification {
 		tpac.toString() == new File(testDir, 'toStr.tpac').getText();
 		
 		when:
-		tpac = new Tpac(new ExistResource(TpacSpec.class).get('TpacSpec/toStr.tpac'));
+		tpac = new Tpac(ExchangeResource.url(TpacSpec.class, 'TpacSpec/toStr.tpac'));
 		then:
 		tpac.toString() == new File(testDir, 'toStr.tpac').getText();
 	}
