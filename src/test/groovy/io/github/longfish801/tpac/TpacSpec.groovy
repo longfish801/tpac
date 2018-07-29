@@ -7,7 +7,7 @@ package io.github.longfish801.tpac;
 
 import groovy.util.logging.Slf4j;
 import io.github.longfish801.shared.lang.ExistResource;
-import io.github.longfish801.shared.util.ClassDirectory;
+import io.github.longfish801.shared.util.PackageDirectory;
 import spock.lang.Specification;
 import spock.lang.Unroll;
 
@@ -19,7 +19,7 @@ import spock.lang.Unroll;
 @Slf4j('LOG')
 class TpacSpec extends Specification {
 	/** ファイル入出力のテスト用フォルダ */
-	private static final File testDir = new ClassDirectory('src/test/resources').getDeepDir(TpacSpec.class);
+	private static final File testDir = PackageDirectory.deepDir('src/test/resources', TpacSpec.class);
 	
 	def 'ファイル内容をTPAC文書とみなして解析結果を保持するコンストラクタです'(){
 		when:

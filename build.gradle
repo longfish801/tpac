@@ -10,8 +10,7 @@ version = '0.1.00';
 
 dependencies {
 	compile 'ch.qos.logback:logback-classic:1.0.12';
-	compile 'commons-io:commons-io:2.5';
-	compile 'io.github.longfish801:shared:0.1.00';
+	compile 'io.github.longfish801:shared:0.2.00';
 	compile 'org.codehaus.groovy:groovy-all:2.4.11';
 	compile 'org.slf4j:slf4j-api:1.7.5';
 	testCompile 'org.spockframework:spock-core:1.0-groovy-2.4';
