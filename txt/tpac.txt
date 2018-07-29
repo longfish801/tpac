@@ -15,7 +15,7 @@
 ■サンプル
 
 　以下にTPAC文書のサンプルを示します。
-　ファイル【リンク：tpacSample/sample.tpac】として保存したとします。
+　ファイル【リンク：sample/sample.tpac】として保存したとします。
 
 ----- コード -----
 #! dec ルート
@@ -39,7 +39,7 @@
 ----- コード -----
 
 　上記の TPAC文書を、以下の XMLに変換できます。
-　ファイル【リンク：tpacSample/sample.xml】として保存したとします。
+　ファイル【リンク：sample/sample.xml】として保存したとします。
 
 ----- コード -----
 <?xml version="1.0" encoding="UTF-8"?>
@@ -64,7 +64,7 @@
 
 　クラス【リンク：Tpac：/tpac/groovydoc/io/github/longfish801/tpac/Tpac.html】を利用して、XMLへの変換などができます。
 
-　以下をファイル【リンク：tpacSample/sample.groovy】として保存したとします。
+　以下をファイル【リンク：sample/sample.groovy】として保存したとします。
 　groovyコマンドで実行すると、assertに成功します。
 
 ----- コード -----
