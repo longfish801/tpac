@@ -1,3 +1,0 @@
-SIGNDEC  = '#! ';
-SIGNPRNT = '## ';
-SIGNCHLD = '# ';

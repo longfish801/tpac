@@ -7,8 +7,8 @@ package io.github.longfish801.tpac.element;
 
 import groovy.util.logging.Slf4j;
 import groovy.xml.MarkupBuilder;
-import io.github.longfish801.shared.lang.ArgmentChecker;
-import io.github.longfish801.shared.util.ClassSlurper;
+import io.github.longfish801.shared.ArgmentChecker;
+import io.github.longfish801.shared.ExchangeResource;
 
 /**
  * TPAC文書の要素です。
@@ -18,7 +18,7 @@ import io.github.longfish801.shared.util.ClassSlurper;
 @Slf4j('LOG')
 abstract class TpacElement {
 	/** ConfigObject */
-	protected static final ConfigObject constants = ClassSlurper.getConfig(TpacElement.class);
+	static final ConfigObject constants = ExchangeResource.config(TpacElement.class);
 	/** 文字列表現時の先頭記号 */
 	String sign = null;
 	/** 行番号 */

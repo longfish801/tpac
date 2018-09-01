@@ -8,8 +8,8 @@ package io.github.longfish801.tpac;
 import groovy.transform.InheritConstructors;
 import groovy.util.logging.Slf4j;
 import groovy.xml.MarkupBuilder;
-import io.github.longfish801.shared.lang.ArgmentChecker;
-import io.github.longfish801.shared.util.ClassSlurper;
+import io.github.longfish801.shared.ArgmentChecker;
+import io.github.longfish801.shared.ExchangeResource;
 import io.github.longfish801.tpac.parser.TpacParser;
 import io.github.longfish801.tpac.element.TpacDeclaration;
 import io.github.longfish801.tpac.parser.ParseException;
@@ -23,7 +23,7 @@ import io.github.longfish801.tpac.parser.TokenMgrError;
 @Slf4j('LOG')
 class Tpac {
 	/** ConfigObject */
-	protected static final ConfigObject constants = ClassSlurper.getConfig(Tpac.class);
+	static final ConfigObject constants = ExchangeResource.config(Tpac.class);
 	/** 宣言要素 */
 	TpacDeclaration dec = null;
 	

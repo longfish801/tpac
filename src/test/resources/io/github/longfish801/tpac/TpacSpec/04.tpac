@@ -1,8 +1,0 @@
-#! tpac TPAC文書
-#-attr 属性
-## parent 親１
-#-attr1
-#-attr2 属性２
-## parent
-# child 子２
-#-attr1 属性１
