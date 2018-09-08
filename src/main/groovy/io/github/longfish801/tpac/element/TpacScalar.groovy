@@ -27,26 +27,26 @@ class TpacScalar {
 		ArgmentChecker.checkNotNull('ハンドル', handle);
 		def value;
 		switch (raw){
-			case TpacHandle.cnst.scalar.kwdNull:
+			case TpacHandle.cnstTeaHandle.scalar.kwdNull:
 				value = null;
 				break;
-			case TpacHandle.cnst.scalar.kwdTrue:
+			case TpacHandle.cnstTeaHandle.scalar.kwdTrue:
 				value = true;
 				break;
-			case TpacHandle.cnst.scalar.kwdFalse:
+			case TpacHandle.cnstTeaHandle.scalar.kwdFalse:
 				value = false;
 				break;
-			case {it ==~ TpacHandle.cnst.scalar.numInt}:
+			case {it ==~ TpacHandle.cnstTeaHandle.scalar.numInt}:
 				value = Integer.parseInt(raw);
 				break;
-			case {it ==~ TpacHandle.cnst.scalar.numBigDecimal}:
+			case {it ==~ TpacHandle.cnstTeaHandle.scalar.numBigDecimal}:
 				value = new BigDecimal(raw);
 				break;
-			case {it.startsWith(TpacHandle.cnst.scalar.refer)}:
-				value = TpacRefer.newInstance(raw.substring(TpacHandle.cnst.scalar.refer.length()), handle);
+			case {it.startsWith(TpacHandle.cnstTeaHandle.scalar.refer)}:
+				value = TpacRefer.newInstance(raw.substring(TpacHandle.cnstTeaHandle.scalar.refer.length()), handle);
 				break;
-			case {it.startsWith(TpacHandle.cnst.scalar.str)}:
-				value = StringEscapeUtils.unescapeJava(raw.substring(TpacHandle.cnst.scalar.str.length()));
+			case {it.startsWith(TpacHandle.cnstTeaHandle.scalar.str)}:
+				value = StringEscapeUtils.unescapeJava(raw.substring(TpacHandle.cnstTeaHandle.scalar.str.length()));
 				break;
 			default:
 				value = raw;
@@ -76,21 +76,21 @@ class TpacScalar {
 				raw = value.toString();
 				break;
 			case TpacRefer:
-				raw = "${TpacHandle.cnst.scalar.refer}${value.toString()}";
+				raw = "${TpacHandle.cnstTeaHandle.scalar.refer}${value.toString()}";
 				break;
 			case String:
 				switch (value){
-					case TpacHandle.cnst.scalar.kwdNull:
-					case TpacHandle.cnst.scalar.kwdTrue:
-					case TpacHandle.cnst.scalar.kwdFalse:
-					case {it ==~ TpacHandle.cnst.scalar.numInt}:
-					case {it ==~ TpacHandle.cnst.scalar.numBigDecimal}:
-					case {it.startsWith(TpacHandle.cnst.scalar.refer)}:
-					case {it.startsWith(TpacHandle.cnst.scalar.str)}:
+					case TpacHandle.cnstTeaHandle.scalar.kwdNull:
+					case TpacHandle.cnstTeaHandle.scalar.kwdTrue:
+					case TpacHandle.cnstTeaHandle.scalar.kwdFalse:
+					case {it ==~ TpacHandle.cnstTeaHandle.scalar.numInt}:
+					case {it ==~ TpacHandle.cnstTeaHandle.scalar.numBigDecimal}:
+					case {it.startsWith(TpacHandle.cnstTeaHandle.scalar.refer)}:
+					case {it.startsWith(TpacHandle.cnstTeaHandle.scalar.str)}:
 					case {it ==~ /.*[\r\n]..*/}:
 					case {it.empty}:
 						value = StringEscapeUtils.escapeJava(value);
-						raw = "${TpacHandle.cnst.scalar.str}${value}";
+						raw = "${TpacHandle.cnstTeaHandle.scalar.str}${value}";
 						break;
 					default:
 						raw = value.toString();

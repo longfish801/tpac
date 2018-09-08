@@ -82,7 +82,7 @@ trait TeaServer {
 	 */
 	TeaHandle path(String path){
 		ArgmentChecker.checkNotBlank('パス', path);
-		if (TpacHandle.cnst.path.decs.every { !(path ==~ it) }){
+		if (TpacHandle.cnstTeaHandle.path.decs.every { !(path ==~ it) }){
 			throw new IllegalArgumentException("パスから宣言を特定できません。path=${path}");
 		}
 		Matcher matcher = Matcher.getLastMatcher();

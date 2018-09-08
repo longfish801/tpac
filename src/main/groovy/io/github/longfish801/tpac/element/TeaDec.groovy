@@ -63,7 +63,7 @@ trait TeaDec extends TeaHandle {
 	 */
 	@Override
 	String getPath(){
-		return "${cnst.path.level}${key}" as String;
+		return "${cnstTeaHandle.path.level}${key}" as String;
 	}
 	
 	/**
@@ -73,6 +73,6 @@ trait TeaDec extends TeaHandle {
 	 */
 	TeaHandle path(String path){
 		ArgmentChecker.checkNotNull('パス', path);
-		return (path.startsWith(cnst.path.level))? server.path(path) : super.path(path);
+		return (path.startsWith(cnstTeaHandle.path.level))? server.path(path) : super.path(path);
 	}
 }

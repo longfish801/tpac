@@ -31,9 +31,9 @@ class TpacRefer {
 	static TpacRefer newInstance(String path, TeaHandle handle){
 		ArgmentChecker.checkNotNull('パス', path);
 		TpacRefer refer = new TpacRefer(handle);
-		int anchorIdx = path.indexOf(TpacHandle.cnst.path.anchor);
+		int anchorIdx = path.indexOf(TpacHandle.cnstTeaHandle.path.anchor);
 		refer.path = (anchorIdx < 0)? path : path.substring(0, anchorIdx);
-		if (anchorIdx >= 0) refer.anchor = path.substring(anchorIdx + TpacHandle.cnst.path.anchor.length());
+		if (anchorIdx >= 0) refer.anchor = path.substring(anchorIdx + TpacHandle.cnstTeaHandle.path.anchor.length());
 		return refer;
 	}
 	
@@ -52,7 +52,7 @@ class TpacRefer {
 	 */
 	@Override
 	String toString(){
-		return (anchor.empty)? path : "${path}${TpacHandle.cnst.path.anchor}${anchor}";
+		return (anchor.empty)? path : "${path}${TpacHandle.cnstTeaHandle.path.anchor}${anchor}";
 	}
 	
 	/**

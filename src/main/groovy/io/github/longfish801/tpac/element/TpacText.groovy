@@ -32,8 +32,8 @@ class TpacText extends ArrayList {
 		ArgmentChecker.checkNotNull('Writer', writer);
 		this.each {
 			writer << (
-				(it ==~ TpacHandle.cnst.tostr.textMeta)?
-				"${TpacHandle.cnst.tostr.textEscape}${it}${System.lineSeparator()}" : 
+				(it ==~ TpacHandle.cnstTeaHandle.tostr.textMeta)?
+				"${TpacHandle.cnstTeaHandle.tostr.textEscape}${it}${System.lineSeparator()}" : 
 				"${it}${System.lineSeparator()}"
 			)
 		}

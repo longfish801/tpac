@@ -24,7 +24,7 @@ import java.util.regex.Matcher;
 @Slf4j('LOG')
 class TeaParty {
 	/** ConfigObject */
-	static final ConfigObject cnst = ExchangeResource.config(TeaParty.class);
+	static final ConfigObject cnstTeaParty = ExchangeResource.config(TeaParty.class);
 	/** TeaServer */
 	TeaServer server;
 	/** TeaMaker */
@@ -101,11 +101,11 @@ class TeaParty {
 	 */
 	protected void branchOut(String line){
 		switch (line){
-			case {it.startsWith(cnst.bol.dec)}: // 宣言
+			case {it.startsWith(cnstTeaParty.bol.dec)}: // 宣言
 				status = ParseStatus.HANDLE;
 				leafDec(line);
 				break;
-			case {it ==~ cnst.bol.handle}: // ハンドル
+			case {it ==~ cnstTeaParty.bol.handle}: // ハンドル
 				status = ParseStatus.HANDLE;
 				leafHandle(line);
 				break;
@@ -118,36 +118,36 @@ class TeaParty {
 	 */
 	protected void branchHandle(String line){
 		switch (line){
-			case {it.startsWith(cnst.bol.dec)}: // 宣言
+			case {it.startsWith(cnstTeaParty.bol.dec)}: // 宣言
 				maker.createHandleEnd();
 				maker.createDecEnd();
 				status = ParseStatus.HANDLE;
 				leafDec(line);
 				break;
-			case cnst.bol.decEnd: // 宣言終端
+			case cnstTeaParty.bol.decEnd: // 宣言終端
 				maker.createHandleEnd();
 				maker.createDecEnd();
 				status = ParseStatus.OUT;
 				break;
-			case {it ==~ cnst.bol.handle}: // ハンドル
+			case {it ==~ cnstTeaParty.bol.handle}: // ハンドル
 				maker.createHandleEnd();
 				leafHandle(line);
 				status = ParseStatus.HANDLE;
 				break;
-			case cnst.bol.handleEnd: // ハンドル終端
+			case cnstTeaParty.bol.handleEnd: // ハンドル終端
 				maker.createHandleEnd();
 				status = ParseStatus.OUT;
 				break;
-			case {!it.startsWith(cnst.bol.text)}: // テキスト
+			case {!it.startsWith(cnstTeaParty.bol.text)}: // テキスト
 				leafText(line);
 				break;
-			case {it ==~ cnst.bol.list}: // リスト
+			case {it ==~ cnstTeaParty.bol.list}: // リスト
 				leafList(line);
 				break;
-			case {it ==~ cnst.bol.map}: // マップ
+			case {it ==~ cnstTeaParty.bol.map}: // マップ
 				leafMap(line);
 				break;
-			case {it.startsWith(cnst.bol.comment)}: // コメント
+			case {it.startsWith(cnstTeaParty.bol.comment)}: // コメント
 				leafComment(line);
 				break;
 			default:
@@ -160,7 +160,7 @@ class TeaParty {
 	 * @param line 解析対象行
 	 */
 	protected void leafDec(String line){
-		if (cnst.patternLine.decs.every { !(line ==~ it) }){
+		if (cnstTeaParty.patternLine.decs.every { !(line ==~ it) }){
 			throw new TeaPartyParseException("文法誤りのため宣言を解析できません。");
 		}
 		Matcher matcher = Matcher.getLastMatcher();
@@ -176,7 +176,7 @@ class TeaParty {
 	 * @param line 解析対象行
 	 */
 	protected void leafHandle(String line){
-		if (cnst.patternLine.handles.every { !(line ==~ it) }){
+		if (cnstTeaParty.patternLine.handles.every { !(line ==~ it) }){
 			throw new TeaPartyParseException("文法誤りのためハンドル開始行を解析できません。");
 		}
 		Matcher matcher = Matcher.getLastMatcher();
@@ -186,10 +186,10 @@ class TeaParty {
 		String scalar = (matcher.groupCount() >= 4)? matcher.group(4) : null;
 		int level;
 		switch (levelStr){
-			case {it ==~ cnst.bolPattern.handle1}:
+			case {it ==~ cnstTeaParty.bolPattern.handle1}:
 				level = Integer.parseInt(Matcher.getLastMatcher().group(1));
 				break;
-			case {it ==~ cnst.bolPattern.handle2}:
+			case {it ==~ cnstTeaParty.bolPattern.handle2}:
 				level = Matcher.getLastMatcher().group(1).length();
 				break;
 			default:
@@ -203,7 +203,7 @@ class TeaParty {
 	 * @param line 解析対象行
 	 */
 	protected void leafText(String line){
-		if (line ==~ cnst.bol.textEscaped) line = line.substring(1);
+		if (line ==~ cnstTeaParty.bol.textEscaped) line = line.substring(1);
 		maker.createText(line);
 	}
 	
@@ -212,7 +212,7 @@ class TeaParty {
 	 * @param line 解析対象行
 	 */
 	protected void leafList(String line){
-		if (cnst.patternLine.list.every { !(line ==~ it) }){
+		if (cnstTeaParty.patternLine.list.every { !(line ==~ it) }){
 			throw new TeaPartyParseException("文法誤りのためリストを解析できません。");
 		}
 		Matcher matcher = Matcher.getLastMatcher();
@@ -226,7 +226,7 @@ class TeaParty {
 	 * @param line 解析対象行
 	 */
 	protected void leafMap(String line){
-		if (cnst.patternLine.map.every { !(line ==~ it) }){
+		if (cnstTeaParty.patternLine.map.every { !(line ==~ it) }){
 			throw new TeaPartyParseException("文法誤りのためマップを解析できません。");
 		}
 		Matcher matcher = Matcher.getLastMatcher();
@@ -241,7 +241,7 @@ class TeaParty {
 	 * @param line 解析対象行
 	 */
 	protected void leafComment(String line){
-		if (!(line ==~ cnst.patternLine.comment)){
+		if (!(line ==~ cnstTeaParty.patternLine.comment)){
 			throw new TeaPartyParseException("文法誤りのためコメントを解析できません。");
 		}
 		String comment = Matcher.getLastMatcher().group(1);
