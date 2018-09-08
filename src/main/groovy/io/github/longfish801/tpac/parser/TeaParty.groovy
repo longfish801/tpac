@@ -25,16 +25,14 @@ import java.util.regex.Matcher;
 class TeaParty {
 	/** ConfigObject */
 	static final ConfigObject cnst = ExchangeResource.config(TeaParty.class);
+	/** TeaServer */
+	TeaServer server;
+	/** TeaMaker */
+	TeaMaker maker;
 	/** 解析状態 */
 	enum ParseStatus { OUT, HANDLE, LIST, MAP, TEXT }
 	/** 現在の解析状態 */
 	ParseStatus status;
-	/** TeaMaker */
-	TeaMaker maker;
-	/** 宣言のタグ名とTeaMakerとのマップ */
-	Map<String, TeaMaker> makerMap = [:];
-	/** デフォルトで使用するTeaMaker */
-	TeaMaker defaultMaker;
 	/** 解析中の行番号 */
 	int lineNo;
 	/** 解析中の行 */
@@ -42,10 +40,10 @@ class TeaParty {
 	
 	/**
 	 * コンストラクタ。
-	 * @param defaultMaker デフォルトで使用するTeaMaker
+	 * @param server TeaServer
 	 */
-	TeaParty(TeaMaker defaultMaker){
-		this.defaultMaker = defaultMaker;
+	TeaParty(TeaServer server){
+		this.server = server;
 	}
 	
 	/**
@@ -169,8 +167,8 @@ class TeaParty {
 		String tag = matcher.group(1);
 		String name = (matcher.groupCount() >= 2)? matcher.group(2) : '';
 		String scalar = (matcher.groupCount() >= 3)? matcher.group(3) : null;
-		maker = makerMap[tag] ?: defaultMaker;
-		maker.createDec(tag, name, scalar);
+		maker = server.maker(tag);
+		maker.createDec(server, tag, name, scalar);
 	}
 	
 	/**
@@ -205,7 +203,7 @@ class TeaParty {
 	 * @param line 解析対象行
 	 */
 	protected void leafText(String line){
-		if (line.startsWith(cnst.bol.textEscaped)) line = line.substring(1);
+		if (line ==~ cnst.bol.textEscaped) line = line.substring(1);
 		maker.createText(line);
 	}
 	

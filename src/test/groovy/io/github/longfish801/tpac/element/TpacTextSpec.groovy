@@ -24,7 +24,7 @@ class TpacTextSpec extends Specification {
 	
 	def '各行の末尾に改行を付与して連結したテキストを返します。'(){
 		expect:
-		text.toString() == null;
+		text.toString() == '';
 		
 		when:
 		text << 'test';
@@ -60,6 +60,13 @@ class TpacTextSpec extends Specification {
 		text.write(writer);
 		then:
 		writer.toString() == "test${System.lineSeparator()}\t# test2${System.lineSeparator()}";
+		
+		when:
+		text << '	# test3';
+		writer = new StringWriter();
+		text.write(writer);
+		then:
+		writer.toString() == "test${System.lineSeparator()}\t# test2${System.lineSeparator()}\t\t# test3${System.lineSeparator()}";
 		
 		when:
 		text.write(null);

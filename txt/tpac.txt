@@ -53,6 +53,7 @@
 
 import io.github.longfish801.tpac.TeaServer;
 import io.github.longfish801.tpac.element.TeaDec;
+import io.github.longfish801.tpac.element.TpacText;
 
 try {
 	// tpac文書を解析し、宣言を参照します

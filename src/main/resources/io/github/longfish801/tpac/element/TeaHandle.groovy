@@ -38,7 +38,7 @@ tostr {
 	handleLevel = '>';
 	handleFormat = "#%s %s%s%s${System.lineSeparator()}";
 	textEscape = "\t";
-	textMeta = '#';
+	textMeta = /\t*#.*/;
 	listFormat = '#%s_%s';
 	mapFormat = '#%s-%s%s';
 	collecLevel = "\t";

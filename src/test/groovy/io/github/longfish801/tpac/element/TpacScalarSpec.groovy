@@ -7,6 +7,7 @@ package io.github.longfish801.tpac.element;
 
 import groovy.util.logging.Slf4j;
 import io.github.longfish801.tpac.TeaServer;
+import io.github.longfish801.tpac.TpacServer;
 import spock.lang.Specification;
 import spock.lang.Unroll;
 import spock.lang.Shared;
@@ -22,7 +23,7 @@ class TpacScalarSpec extends Specification {
 	@Shared TeaHandle handle;
 	
 	def setup(){
-		handle = new TpacDec().setup('tag', 'name', new TeaServer());
+		handle = new TpacDec().setup('tag', 'name', new TpacServer());
 	}
 	
 	def '文字列を評価してスカラー値を返します。'(){

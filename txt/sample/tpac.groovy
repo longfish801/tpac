@@ -3,11 +3,14 @@
 @GrabExclude('org.codehaus.groovy:groovy-all')
 
 import io.github.longfish801.tpac.TeaServer;
+import io.github.longfish801.tpac.TpacServer;
+import io.github.longfish801.tpac.TeaServerParseException;
 import io.github.longfish801.tpac.element.TeaDec;
+import io.github.longfish801.tpac.element.TpacText;
 
 try {
 	// tpac文書を解析し、宣言を参照します
-	TeaServer server = new TeaServer();
+	TeaServer server = new TpacServer();
 	server.soak(new File('account.tpac'));
 	TeaDec dec = server['tpac:account'];
 	
@@ -23,7 +26,6 @@ try {
 	assert dec.lowers['hobby:'].list ==
 		[ '国内旅行', [ 'Java', 'Groovy' ], [ '読書も好きです。', '推理小説をよく読みます。' ] as TpacText ];
 	
-} catch (TeaServer.TeaServerParseException exc){
+} catch (TeaServerParseException exc){
 	println "tpac文書の読込に失敗しました。exc=${exc}";
 }
-

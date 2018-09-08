@@ -1,57 +1,33 @@
 /*
- * TeaServerSpec.groovy
+ * TpacServerSpec.groovy
  *
  * Copyright (C) io.github.longfish801 All Rights Reserved.
  */
 package io.github.longfish801.tpac;
 
 import groovy.util.logging.Slf4j;
-import io.github.longfish801.tpac.parser.TeaMaker;
 import spock.lang.Specification;
 import spock.lang.Unroll;
 import spock.lang.Shared;
 
 /**
- * TeaServerクラスのテスト。
+ * TpacServerクラスのテスト。
  * @version 1.0.00 2018/09/01
  * @author io.github.longfish801
  */
 @Slf4j('LOG')
-class TeaServerSpec extends Specification {
-	/** TeaServer */
-	@Shared TeaServer server;
+class TpacServerSpec extends Specification {
+	/** TpacServer */
+	@Shared TpacServer server;
 	
 	def setup(){
-		server = new TeaServer();
-	}
-	
-	def '宣言とTeaMakerとの関連付けを追加します。'(){
-		given:
-		String source;
-		
-		when:
-		source = '''\
-			#! tpac name hello
-			#! xpac name hello
-			'''.stripIndent();
-		server.appendMakers([ new XpacMaker() ]);
-		server.soak(source);
-		then:
-		server['tpac:name'].scalar == 'hello';
-		server['xpac:name'].scalar == 'hello:x';
-	}
-	
-	class XpacMaker implements TeaMaker {
-		String decTag = 'xpac';
-		def evalScalar(String raw){
-			return "${raw}:x";
-		}
+		server = new TpacServer();
 	}
 	
 	def 'tpac文書を解析します。'(){
 		given:
 		String source;
-		TeaServer.TeaServerParseException exc;
+		TeaServerParseException exc;
 		
 		when:
 		source = '''\
@@ -68,7 +44,7 @@ class TeaServerSpec extends Specification {
 			'''.stripIndent();
 		server.soak(source);
 		then:
-		exc = thrown(TeaServer.TeaServerParseException);
+		exc = thrown(TeaServerParseException);
 		exc.message == 'tpac文書の構築が記述誤りのため失敗しました。lineNo=2 line=#	_a';
 	}
 	

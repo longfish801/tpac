@@ -8,6 +8,7 @@ package io.github.longfish801.tpac.parser;
 import groovy.util.logging.Slf4j;
 import io.github.longfish801.shared.PackageDirectory;
 import io.github.longfish801.tpac.TeaServer;
+import io.github.longfish801.tpac.TpacServer;
 import io.github.longfish801.tpac.element.TeaDec;
 import io.github.longfish801.tpac.element.TpacText;
 import spock.lang.Specification;
@@ -28,8 +29,8 @@ class TeaPartySpec extends Specification {
 	@Shared TeaParty teaParty;
 	
 	def setup(){
-		server = new TeaServer();
-		teaParty = new TeaParty(new TpacMaker().setup(server));
+		server = new TpacServer();
+		teaParty = new TeaParty(server);
 	}
 	
 	def 'ファイルの内容をtpac文書とみなして解析します。'(){
@@ -220,12 +221,13 @@ class TeaPartySpec extends Specification {
 			#> handle
 			Then, Goodbye!
 				# really?
+					# is it true?
 			It's a joke!
 			'''.stripIndent();
 		teaParty.soak(source);
 		then:
 		server['tpac:hello'].text.join() == 'Hello, World!';
-		server['tpac:hello'].lowers['handle:'].text.join('|') == "Then, Goodbye!|# really?|It's a joke!";
+		server['tpac:hello'].lowers['handle:'].text.join('|') == "Then, Goodbye!|# really?|\t# is it true?|It's a joke!";
 	}
 	
 	def 'リストを解析します。'(){
