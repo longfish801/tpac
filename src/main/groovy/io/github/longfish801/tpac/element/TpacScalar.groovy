@@ -7,6 +7,7 @@ package io.github.longfish801.tpac.element;
 
 import groovy.util.logging.Slf4j;
 import io.github.longfish801.shared.ArgmentChecker;
+import java.util.regex.Pattern;
 import org.apache.commons.text.StringEscapeUtils;
 
 /**
@@ -45,6 +46,9 @@ class TpacScalar {
 			case {it.startsWith(TpacHandle.cnstTeaHandle.scalar.refer)}:
 				value = TpacRefer.newInstance(raw.substring(TpacHandle.cnstTeaHandle.scalar.refer.length()), handle);
 				break;
+			case {it.startsWith(TpacHandle.cnstTeaHandle.scalar.rex)}:
+				value = Pattern.compile(raw.substring(TpacHandle.cnstTeaHandle.scalar.rex.length()));
+				break;
 			case {it.startsWith(TpacHandle.cnstTeaHandle.scalar.str)}:
 				value = StringEscapeUtils.unescapeJava(raw.substring(TpacHandle.cnstTeaHandle.scalar.str.length()));
 				break;
@@ -78,6 +82,9 @@ class TpacScalar {
 			case TpacRefer:
 				raw = "${TpacHandle.cnstTeaHandle.scalar.refer}${value.toString()}";
 				break;
+			case Pattern:
+				raw = "${TpacHandle.cnstTeaHandle.scalar.rex}${value.pattern()}";
+				break;
 			case String:
 				switch (value){
 					case TpacHandle.cnstTeaHandle.scalar.kwdNull:
@@ -86,6 +93,7 @@ class TpacScalar {
 					case {it ==~ TpacHandle.cnstTeaHandle.scalar.numInt}:
 					case {it ==~ TpacHandle.cnstTeaHandle.scalar.numBigDecimal}:
 					case {it.startsWith(TpacHandle.cnstTeaHandle.scalar.refer)}:
+					case {it.startsWith(TpacHandle.cnstTeaHandle.scalar.rex)}:
 					case {it.startsWith(TpacHandle.cnstTeaHandle.scalar.str)}:
 					case {it ==~ /.*[\r\n]..*/}:
 					case {it.empty}:

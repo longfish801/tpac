@@ -5,7 +5,6 @@
  */
 package io.github.longfish801.tpac;
 
-import groovy.transform.InheritConstructors;
 import groovy.util.logging.Slf4j;
 import io.github.longfish801.shared.ArgmentChecker;
 import io.github.longfish801.tpac.element.TeaHandle;

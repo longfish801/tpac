@@ -6,6 +6,10 @@
 package io.github.longfish801.tpac;
 
 import groovy.util.logging.Slf4j;
+import io.github.longfish801.tpac.element.TeaDec;
+import io.github.longfish801.tpac.element.TeaHandle;
+import io.github.longfish801.tpac.parser.TeaMaker;
+import io.github.longfish801.tpac.parser.TeaMakerMakeException;
 import spock.lang.Specification;
 import spock.lang.Unroll;
 import spock.lang.Shared;
@@ -64,5 +68,79 @@ class TpacServerSpec extends Specification {
 		path						|| expect
 		'/tpac:hello'				|| '/tpac:hello';
 		'/tpac:hello/handle:bye'	|| '/tpac:hello/handle:bye';
+	}
+	
+	def 'tpac記法をベースとする独自記法を実装します。'(){
+		given:
+		String source;
+		TeaDec dec;
+		TeaServerParseException exc;
+		TeaServer someServer;
+		
+		when:
+		source = '''\
+			#! some body 123
+			#> thing
+			#-important @/tpac:/handle:aaa#scalar
+			#! tpac
+			#> handle aaa 456
+			'''.stripIndent();
+		someServer = new SomeServer();
+		someServer.soak(source);
+		dec = someServer['some:body'];
+		then:
+		dec.scalar == 123;
+		dec.lowers['thing:'].map.important.refer() == 456;
+		
+		when:
+		source = '''\
+			#! some thing
+			'''.stripIndent();
+		someServer = new SomeServer();
+		someServer.soak(source);
+		then:
+		exc = thrown(TeaServerParseException);
+		exc.cause.message == 'スカラー値が指定されていません。key=some:thing';
+		
+		when:
+		source = '''\
+			#! some how 123
+			#> thing
+			'''.stripIndent();
+		someServer = new SomeServer();
+		someServer.soak(source);
+		then:
+		exc = thrown(TeaServerParseException);
+		exc.cause.message == 'importantが指定されていません。key=thing:';
+	}
+	
+	class SomeServer implements TeaServer {
+		TeaMaker maker(String tag){
+			return (tag == 'some')? new SomeMaker() : TeaServer.super.maker(tag);
+		}
+	}
+	
+	class SomeMaker implements TeaMaker {
+		TeaDec newTeaDec(String tag, String name){
+			return new SomeDec();
+		}
+		
+		TeaHandle newTeaHandle(String tag, String name, TeaHandle upper){
+			return (tag == 'thing')? new ThingHandle() : TeaMaker.super.newTeaHandle(tag, name, upper);
+		}
+	}
+	
+	class SomeDec implements TeaDec {
+		@Override
+		void validate(){
+			if (scalar == null) throw new TeaMakerMakeException("スカラー値が指定されていません。key=${key}");
+		}
+	}
+	
+	class ThingHandle implements TeaHandle {
+		@Override
+		void validate(){
+			if (map.important == null) throw new TeaMakerMakeException("importantが指定されていません。key=${key}");
+		}
 	}
 }

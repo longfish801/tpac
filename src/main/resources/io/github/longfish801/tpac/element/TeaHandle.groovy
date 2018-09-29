@@ -29,6 +29,7 @@ scalar {
 	numInt = /-?\d+/;
 	numBigDecimal = /-?\d+\.\d+/;
 	refer = '@';
+	rex = '~';
 	str = '^';
 }
 

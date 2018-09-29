@@ -33,6 +33,8 @@ trait TeaMaker {
 	int preLevelCollection;
 	/** 生成対象のコレクション */
 	def curCollection;
+	/** 生成した宣言のリスト */
+	List decs = [];
 	
 	/**
 	 * TeaDecインスタンスを生成します。
@@ -84,6 +86,7 @@ trait TeaMaker {
 	void createDec(TeaServer server, String tag, String name, String scalar){
 		TeaDec dec = this.newTeaDec(tag, name);
 		dec.setup(tag, name, server);
+		decs << dec;
 		handle = dec;
 		if (scalar != null) dec.scalar = evalScalar(scalar);
 		textStore = TeaParty.ParseStatus.HANDLE;
@@ -97,7 +100,6 @@ trait TeaMaker {
 	void createDecEnd(){
 		textStore = TeaParty.ParseStatus.OUT;
 		commentStore = TeaParty.ParseStatus.OUT;
-		handle.validate();
 	}
 	
 	/**
@@ -223,6 +225,13 @@ trait TeaMaker {
 			default:
 				throw new InternalError("想定外の格納先です。commentStore=${commentStore}");
 		}
+	}
+	
+	/**
+	 * 生成完了時の処理をします。
+	 */
+	void allend(){
+		decs.each { it.validateBasic() }
 	}
 	
 	/**

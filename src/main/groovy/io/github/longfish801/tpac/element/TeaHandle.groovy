@@ -77,15 +77,28 @@ trait TeaHandle {
 	}
 	
 	/**
-	 * このハンドラならびに下位ハンドラの妥当性を検証します。
+	 * このハンドラの妥当性を検証します。<br/>
+	 * このメソッドは {@link TeaServer#soak(def)}からハンドラを作成したときに呼びます。<br/>
+	 * 必要に応じてオーバーライドし、妥当性の検証や初期化に利用してください。
+	 * @see #validateBasic()
+	 * @throws TeaMakerMakeException 妥当性の検証で問題がみつかりました。
 	 */
 	void validate(){
+		// なにもしません
+	}
+	
+	/**
+	 * このハンドラならびに下位ハンドラの妥当性を検証します。
+	 * @see #validate()
+	 * @throws TeaMakerMakeException 妥当性の検証で問題がみつかりました。
+	 */
+	void validateBasic(){
 		// スカラー値をチェックするクロージャです
 		Closure checkScalar = { def val ->
 			try {
 				TpacScalar.format(val);
 			} catch (IllegalArgumentException exc){
-				throw new TeaMakerMakeException("名前の値が不正です。name=${name}");
+				throw new TeaMakerMakeException("スカラー値が不正です。val=${val}");
 			}
 		}
 		// コレクションを再帰的にチェックするクロージャです
@@ -111,7 +124,10 @@ trait TeaHandle {
 		checkScalar(scalar);
 		checkCollec(list);
 		checkCollec(map);
-		lowers.values().each { it.validate() }
+		// 上記以外にチェックすべき妥当性があれば検証します
+		validate();
+		// 下位ハンドラの妥当性を検証します
+		lowers.values().each { it.validateBasic() }
 	}
 	
 	/**

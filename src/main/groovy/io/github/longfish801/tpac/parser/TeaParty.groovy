@@ -93,6 +93,7 @@ class TeaParty {
 				default: throw new InternalError("想定外の解析状態です。lineNo=${lineNo} status=${status}");
 			}
 		}
+		switchMaker(null);
 	}
 	
 	/**
@@ -119,18 +120,14 @@ class TeaParty {
 	protected void branchHandle(String line){
 		switch (line){
 			case {it.startsWith(cnstTeaParty.bol.dec)}: // 宣言
-				maker.createHandleEnd();
-				maker.createDecEnd();
 				status = ParseStatus.HANDLE;
 				leafDec(line);
 				break;
 			case cnstTeaParty.bol.decEnd: // 宣言終端
-				maker.createHandleEnd();
 				maker.createDecEnd();
 				status = ParseStatus.OUT;
 				break;
 			case {it ==~ cnstTeaParty.bol.handle}: // ハンドル
-				maker.createHandleEnd();
 				leafHandle(line);
 				status = ParseStatus.HANDLE;
 				break;
@@ -167,7 +164,7 @@ class TeaParty {
 		String tag = matcher.group(1);
 		String name = (matcher.groupCount() >= 2)? matcher.group(2) : '';
 		String scalar = (matcher.groupCount() >= 3)? matcher.group(3) : null;
-		maker = server.maker(tag);
+		switchMaker(tag);
 		maker.createDec(server, tag, name, scalar);
 	}
 	
@@ -246,6 +243,15 @@ class TeaParty {
 		}
 		String comment = Matcher.getLastMatcher().group(1);
 		maker.createComment(comment);
+	}
+	
+	/**
+	 * TeaMakerをタグに応じて切り替えます。
+	 * @param tag タグ
+	 */
+	protected void switchMaker(String tag){
+		if (maker != null || tag == null) maker.allend();
+		maker = (tag == null)? null : server.maker(tag);
 	}
 	
 	/**
