@@ -87,7 +87,7 @@ trait TeaServer {
 		Matcher matcher = Matcher.getLastMatcher();
 		String dec = matcher.group(1);
 		String other = (matcher.groupCount() >= 2)? matcher.group(2) : null;
-		TeaHandle hndl = (other == null)? this.getAt(dec) : this.getAt(dec).path(other);
+		TeaHandle hndl = (other == null)? this.getAt(dec) : this.getAt(dec)?.path(other);
 		if (hndl == null) throw new IllegalArgumentException("パスから宣言を特定できません。path=${path}");
 		return hndl;
 	}
