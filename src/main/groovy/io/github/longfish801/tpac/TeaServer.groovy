@@ -39,7 +39,7 @@ trait TeaServer {
 	
 	/**
 	 * tpac文書を解析します。
-	 * @param reader 処理対象
+	 * @param reader 処理対象（File、URL、String、BufferedReaderのいずれか）
 	 * @return 自インスタンス
 	 */
 	TeaServer soak(def source){
