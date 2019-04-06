@@ -5,7 +5,7 @@ bol {
 	handle = /#[0-9]*>{1,3} .+/;
 	handleEnd = '#';
 	text = '#';	// 否定で判定する
-	textEscaped = "\t#";
+	textEscaped = /\t*#.*/;
 	list = /#\t*_.*/;
 	map = /#\t*-.+/;
 	comment = '# ';

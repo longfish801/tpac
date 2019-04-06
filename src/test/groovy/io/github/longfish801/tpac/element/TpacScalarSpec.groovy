@@ -7,6 +7,8 @@ package io.github.longfish801.tpac.element;
 
 import groovy.util.logging.Slf4j;
 import io.github.longfish801.tpac.TeaServer;
+import io.github.longfish801.tpac.TpacServer;
+import java.util.regex.Pattern;
 import spock.lang.Specification;
 import spock.lang.Unroll;
 import spock.lang.Shared;
@@ -22,7 +24,7 @@ class TpacScalarSpec extends Specification {
 	@Shared TeaHandle handle;
 	
 	def setup(){
-		handle = new TpacDec().setup('tag', 'name', new TeaServer());
+		handle = new TpacDec().setup('tag', 'name', new TpacServer());
 	}
 	
 	def '文字列を評価してスカラー値を返します。'(){
@@ -33,6 +35,12 @@ class TpacScalarSpec extends Specification {
 		refer = TpacScalar.eval('@some:thing', handle);
 		then:
 		refer instanceof TpacRefer;
+		
+		when:
+		refer = TpacScalar.eval('~.+', handle);
+		then:
+		refer instanceof Pattern;
+		refer.pattern == '.+';
 		
 		when:
 		TpacScalar.eval(null, handle);
@@ -46,7 +54,7 @@ class TpacScalarSpec extends Specification {
 	}
 	
 	@Unroll
-	def '文字列を評価してスカラー値を返します（参照以外）。'(){
+	def '文字列を評価してスカラー値を返します（Unroll）。'(){
 		expect:
 		TpacScalar.eval(raw, handle) == expect;
 		
@@ -74,13 +82,16 @@ class TpacScalarSpec extends Specification {
 		
 		when:
 		raw = TpacScalar.format(refer);
+		then:
+		raw == '@some:thing';
 		
+		when:
+		raw = TpacScalar.format(refer);
 		then:
 		raw == '@some:thing';
 		
 		when:
 		TpacScalar.format([]);
-		
 		then:
 		exc = thrown(IllegalArgumentException);
 		exc.message == '文字列表現に変換できないスカラー値です。value=[] class=java.util.ArrayList';
@@ -102,6 +113,7 @@ class TpacScalarSpec extends Specification {
 		4.5		|| '4.5';
 		-0.22	|| '-0.22';
 		0.0		|| '0.0';
+		Pattern.compile('.+')	|| '~.+';
 		'Groovy'	|| 	'Groovy';
 	}
 	
@@ -121,6 +133,7 @@ class TpacScalarSpec extends Specification {
 		'4.5'	|| '^4.5';
 		'-0.22'	|| '^-0.22';
 		'0.0'	|| '^0.0';
+		'~.+'	|| '^~.+';
 		'@Groovy'	|| '^@Groovy';
 		'^Groovy'	|| '^^Groovy';
 		"Yes,\nGroovy"	|| 	/^Yes,\nGroovy/;

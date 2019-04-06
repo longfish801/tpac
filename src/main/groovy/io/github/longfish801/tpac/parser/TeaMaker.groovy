@@ -23,8 +23,6 @@ import io.github.longfish801.tpac.element.TpacText;
  * @author io.github.longfish801
  */
 trait TeaMaker {
-	/** TeaServer */
-	TeaServer server;
 	/** 生成中のTeaHandle */
 	TeaHandle handle;
 	/** テキストの格納先 */
@@ -35,26 +33,8 @@ trait TeaMaker {
 	int preLevelCollection;
 	/** 生成対象のコレクション */
 	def curCollection;
-	
-	/**
-	 * TeaMakerを準備します。<br/>
-	 * インスタンス作成後に必ず実行してください。
-	 * @param server TeaServer
-	 * @return 自インスタンス
-	 */
-	TeaMaker setup(TeaServer server){
-		ArgmentChecker.checkNotNull('TeaServer', server);
-		this.server = server;
-		return this;
-	}
-	
-	/**
-	 * このTeaMakerが解析対象とする宣言のタグを返します。
-	 * @return 宣言のタグ
-	 */
-	String getDecTag(){
-		throw new UnsupportedOperationException();
-	}
+	/** 生成した宣言のリスト */
+	List decs = [];
 	
 	/**
 	 * TeaDecインスタンスを生成します。
@@ -63,7 +43,7 @@ trait TeaMaker {
 	 * @return TeaDec
 	 */
 	TeaDec newTeaDec(String tag, String name){
-		return new TpacDec().setup(tag, name, server);
+		return new TpacDec();
 	}
 	
 	/**
@@ -74,7 +54,7 @@ trait TeaMaker {
 	 * @return TeaHandle
 	 */
 	TeaHandle newTeaHandle(String tag, String name, TeaHandle upper){
-		return new TpacHandle().setup(tag, name, upper);
+		return new TpacHandle();
 	}
 	
 	/**
@@ -98,12 +78,15 @@ trait TeaMaker {
 	
 	/**
 	 * 宣言を生成します。
+	 * @param server TeaServer
 	 * @param tag タグ
 	 * @param name 名前
 	 * @param scalar スカラー値
 	 */
-	void createDec(String tag, String name, String scalar){
+	void createDec(TeaServer server, String tag, String name, String scalar){
 		TeaDec dec = this.newTeaDec(tag, name);
+		dec.setup(tag, name, server);
+		decs << dec;
 		handle = dec;
 		if (scalar != null) dec.scalar = evalScalar(scalar);
 		textStore = TeaParty.ParseStatus.HANDLE;
@@ -117,7 +100,6 @@ trait TeaMaker {
 	void createDecEnd(){
 		textStore = TeaParty.ParseStatus.OUT;
 		commentStore = TeaParty.ParseStatus.OUT;
-		handle.validate();
 	}
 	
 	/**
@@ -143,6 +125,7 @@ trait TeaMaker {
 			default: upper = higherHandle(handle.level - level, handle.upper);
 		}
 		TeaHandle newHandle = this.newTeaHandle(tag, name, upper);
+		newHandle.setup(tag, name, upper);
 		handle = newHandle;
 		if (scalar != null) newHandle.scalar = evalScalar(scalar);
 		textStore = TeaParty.ParseStatus.HANDLE;
@@ -242,6 +225,13 @@ trait TeaMaker {
 			default:
 				throw new InternalError("想定外の格納先です。commentStore=${commentStore}");
 		}
+	}
+	
+	/**
+	 * 生成完了時の処理をします。
+	 */
+	void allend(){
+		decs.each { it.validateBasic() }
 	}
 	
 	/**

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tpac記法</title>
+<link href="/tpac/_asset/style.css" rel="stylesheet">
+<script src="/tpac/_asset/script.js"></script>
+</head>
+<body>
+
+<header class="container">
+<h1>tpac記法</h1>
+
+<nav class="list-group">
+<a href="#id2_1" class="list-group-item">概要</a>
+<a href="#id2_2" class="list-group-item">サンプル</a>
+<a href="#id2_3" class="list-group-item">宣言終端</a>
+<a href="#id2_4" class="list-group-item">ハンドル</a>
+<a href="#id3_5" class="list-group-item">　ハンドル開始行と親子関係</a>
+<a href="#id3_6" class="list-group-item">　ハンドルの形式</a>
+<a href="#id2_7" class="list-group-item">ハンドル終端</a>
+<a href="#id2_8" class="list-group-item">スカラー値</a>
+<a href="#id3_9" class="list-group-item">　データ型</a>
+<a href="#id3_10" class="list-group-item">　参照</a>
+<a href="#id3_11" class="list-group-item">　文字列</a>
+<a href="#id2_12" class="list-group-item">テキスト</a>
+<a href="#id2_13" class="list-group-item">マップ</a>
+<a href="#id2_14" class="list-group-item">コメント</a>
+</nav>
+</header>
+
+<article class="container">
+<h2><a name="id2_1"></a>概要</h2>
+
+<p>　tpac記法は、改行を含む長めの文章や、親子関係を簡単に記述するための記法です。<br/>
+　名称は、長めの文章(Text)と親子関係(Parent And Child)に由来しています。</p>
+
+<p>　以下のとおり、既存の記法では難しいことから独自に作成しました。</p>
+
+<ul>
+<li>XMLは、長いテキストや階層的なデータ構造を実現できますが、表現が冗長です。</li>
+<li>JSONや YAMLは、階層的なデータ構造を実現できますが、長いテキストの記述には向いていません。</li>
+<li>Groovy DSLは、文法的な誤りを含むテキストを記述できません。</li>
+</ul>
+
+<p>　tpac文書は<a href="/gitdoc/tpac/groovydoc/io/github/longfish801/tpac/TeaServer.html">TeaServerクラス</a>で解析できます。</p>
+
+<h2><a name="id2_2"></a>サンプル</h2>
+
+<p>　以下にtpac文書のサンプルを示します。<br/>
+　ファイル<a href="sample/sample.tpac">sample/sample.tpac</a>として保存したとします。</p>
+
+<pre class="code">
+#! tpac account
+# 山田太郎のアカウントです。
+#&gt; kind personal
+#&gt;&gt; elem name 山田太郎
+#&gt;&gt; elem age 19
+#&gt;&gt; map family
+#-father 山田一郎
+#-mother 山田花子
+#&gt; elem remarks
+編集中。
+後で見直します。
+#
+#&gt; elem hobby
+#_国内旅行
+#_
+#	_Java
+#	_Groovy
+#_
+読書も好きです。
+推理小説をよく読みます。
+#!!
+</pre>
+
+<p>　上記の tpac文書を読みこんで、assertで内容を確認するスクリプト<a href="sample/tpac.groovy">sample/tpac.groovy</a>は以下の内容となります。</p>
+
+<pre class="code">
+@GrabResolver(name = 'longfish801 github repositry', root = 'https://longfish801.github.io/maven/')
+@Grab('io.github.longfish801:tpac:0.2.00')
+@GrabExclude('org.codehaus.groovy:groovy-all')
+import io.github.longfish801.tpac.TeaServer;
+import io.github.longfish801.tpac.element.TeaDec;
+import io.github.longfish801.tpac.element.TpacText;
+try {
+	// tpac文書を解析し、宣言を参照します
+	TeaServer server = new TeaServer();
+	server.soak(new File('account.tpac'));
+	TeaDec dec = server['tpac:account'];
+	
+	// 読込内容を確認します
+	assert dec.key == 'tpac:account';
+	assert dec.comment.handle == [ '山田太郎のアカウントです。' ];
+	assert dec.lowers['kind:personal'].lowers['elem:name'].scalar == '山田太郎';
+	assert dec.lowers['kind:personal'].lowers['elem:age'].scalar == 19;
+	assert dec.lowers['kind:personal'].lowers['map:family'].map == 
+		[ 'father': '山田一郎', 'mother': '山田花子' ];
+	assert dec.lowers['remarks:'].text == [ '編集中。', '後で見直します。' ] as TpacText;
+	assert dec.lowers['guarantor:name'].scalar.refer() == '山田一郎';
+	assert dec.lowers['hobby:'].list ==
+		[ '国内旅行', [ 'Java', 'Groovy' ], [ '読書も好きです。', '推理小説をよく読みます。' ] as TpacText ];
+	
+} catch (TeaServer.TeaServerParseException exc){
+	println &quot;tpac文書の読込に失敗しました。exc=${exc}&quot;;
+}
+</pre>
+
+<p>　上記の tpac文書を、以下の XMLに変換できます。<br/>
+　ファイル<a href="sample/sample.xml">sample/sample.xml</a>として保存したとします。</p>
+
+<pre class="code">
+#! tea アッサム
+</pre>
+
+<p>　宣言よりも前に記述された内容は無視します。<br/>
+　ハンドルと同様に、宣言もスカラー値やテキストを保持することができます。</p>
+
+<h2><a name="id2_3"></a>宣言終端</h2>
+
+<p>　tpac文書を明示的に終了したい場合は、以下の行を記述してください。<br/>
+　宣言終端より後に記述された内容は無視します。</p>
+
+<pre class="code">
+#!!
+</pre>
+
+<h2><a name="id2_4"></a>ハンドル</h2>
+
+<p>　宣言以降にハンドルを記述してください。<br/>
+　ハンドルは、スカラー値とマップを保持することができます。<br/>
+　複数のハンドルを記述できます。<br/>
+　ハンドル同士に親子関係を持たせることができます。</p>
+
+<h3><a name="id3_5"></a>ハンドル開始行と親子関係</h3>
+
+<p>　ハンドル開始行には、行頭に「#[数値]&gt;」を記述してください。<br/>
+　[数値]は階層を表します。１以上の値を指定してください。<br/>
+　たとえば以下のように親子関係を表現できます。</p>
+
+<pre class="code">
+#1&gt; handle 親--
+#2&gt; handle 子1
+#3&gt; handle 孫11
+#2&gt; handle 子2
+#2&gt; handle 子3
+#3&gt; handle 孫31
+#3&gt; handle 孫32
+</pre>
+
+<p>　階層が 1～3の場合のみ、省略記法が使えます。<br/>
+　以下は、上記の例と同じ階層関係を表しています。</p>
+
+<pre class="code">
+#&gt; handle 親--
+#&gt;&gt; handle 子1
+#&gt;&gt;&gt; handle 孫11
+#&gt;&gt; handle 子2
+#&gt;&gt; handle 子3
+#&gt;&gt;&gt; handle 孫31
+#&gt;&gt;&gt; handle 孫32
+</pre>
+
+<h3><a name="id3_6"></a>ハンドルの形式</h3>
+
+<p>　ハンドル開始行にはタグ名、名前、スカラー値を指定します。<br/>
+　タグ名、名前、スカラー値を半角スペース区切りで記述します。<br/>
+　タグ名の前にも半角スペースが必要なことに留意してください。</p>
+
+<p>　タグ名は必須です。<br/>
+　同じ宣言あるいは親ハンドルに属す複数のハンドルがあるとき、タグ名は重複しても構いません。<br/>
+　タグ名に改行コード、半角スペース、半角シャープ(#)、半角スラッシュ(/)、半角コロン(:)は使用できません。</p>
+
+<p>　名前は省略可（空文字扱い）です。同じタグ名で、名前を省略できるハンドルはひとつだけとなります。<br/>
+　同じ宣言あるいは親ハンドルに属す複数のハンドルがあるとき、タグ名と名前の組合せに重複は許されません。<br/>
+　名前に改行コード、半角スペース、半角シャープ(#)、半角スラッシュ(/)、半角コロン(:)は使用できません。</p>
+
+<p>　スカラー値は省略可です。名前の後に、半角スペース区切りで記述してください。<br/>
+　名前を省略したときはスカラー値を指定することはできません。</p>
+
+<p>　ハンドル開始行の次行からマップを記述できます。省略可です。<br/>
+　たとえば以下のハンドルは、文字列'吾輩は猫である'というスカラー値、[author: '夏目漱石', publisher: '新潮社', text: &quot;吾輩は猫である。\n名前はまだ無い。&quot; ]というマップを持っています。</p>
+
+<pre class="code">
+#&gt; book ISBN-999 吾輩は猫である
+#-author 夏目漱石
+#-publisher 新潮社
+#-text
+吾輩は猫である。
+名前はまだ無い。
+</pre>
+
+<p>　ひとつだけ、キーを省略したテキストをマップの先頭に記述することができます。<br/>
+　このときキーは空文字扱いとなります。<br/>
+　たとえば以下のハンドルは、[ '': &quot;吾輩は猫である。\n名前はまだ無い。&quot; ]というマップを持っています。</p>
+
+<pre class="code">
+#&gt; book ISBN-999
+吾輩は猫である。
+名前はまだ無い。
+</pre>
+
+<p>　ハンドルが保持する値は、以下の初期値を持っています。</p>
+
+<ul>
+<li>スカラー値：Null値</li>
+<li>マップ：空マップ</li>
+</ul>
+
+<h2><a name="id2_7"></a>ハンドル終端</h2>
+
+<p>　明示的にハンドルの終端を示すには「#」のみの行を記述してください。<br/>
+　終端から次のハンドル開始行までの記述は無視します。</p>
+
+<h2><a name="id2_8"></a>スカラー値</h2>
+
+<h3><a name="id3_9"></a>データ型</h3>
+
+<p>　以下のデータ型のスカラー値を指定できます。</p>
+
+<ul>
+<li>Null値（固定文字列&quot;null&quot;）</li>
+<li>真偽（固定文字列&quot;true&quot;, &quot;false&quot;）</li>
+<li>整数（12, 0, -3など）<br/>
+<ul>
+<li>正規表現「\-?\d+」とマッチする文字列。<br/>
+java.lang.Integerとして保持します。</li>
+</ul></li>
+<li>浮動小数点（0.05, -1.0など）<br/>
+<ul>
+<li>正規表現「\-?\d+\.\d+」とマッチする文字列。<br/>
+java.math.BigDecimalとして保持します。</li>
+</ul></li>
+<li>参照（@始まり）</li>
+<li>正規表現（:始まり）</li>
+<li>文字列（_始まり、あるいは上記以外）</li>
+</ul>
+
+<p>　スカラー値は tpac文書を解析した時点で、目的のデータ型に変換します。<br/>
+　参照だけは遅延評価します。値を参照されたときに初めて参照先の値を取得します。</p>
+
+<h3><a name="id3_10"></a>参照</h3>
+
+<p>　参照は、他のハンドルやハンドルが保持する値を参照することができます。</p>
+
+<ul>
+<li>必ず半角アットマークから開始します。</li>
+<li>タグ名と名前を半角コロンで連結してください。<br/>
+名前が省略されている場合は空文字扱いとなります。<br/>
+半角コロンがない場合はタグ名のみ指定（名前は空文字）扱いとみなします。</li>
+<li>文書とハンドルの親子関係は半角スラッシュで連結してください。</li>
+<li>絶対パス（先頭に文書を指定）する場合は半角スラッシュを文書の前に付与します。</li>
+<li>相対的に上位のハンドルを指すには「..」を利用してください。</li>
+<li>ハンドルが保持する値を参照する場合、半角シャープの後にたとえば以下を続けてください。<br/>
+これは Groovyスクリプトとして evalした値となります。<br/>
+<ul>
+<li>スカラー値ならば固定文字列&quot;scalar&quot;</li>
+<li>マップならば固定文字列&quot;map&quot;</li>
+</ul></li>
+</ul>
+
+<p>　たとえば以下の文書内に対して「@/gconfig:config/account:t-yamada/language#map[''][0]」を参照すると「日本語」が返ります。</p>
+
+<pre class="code">
+#! gconfig config
+#&gt; account t-yamada 山田太郎
+#&gt;&gt; language
+日本語
+英語
+</pre>
+
+<h3><a name="id3_11"></a>文字列</h3>
+
+<p>　明示的に文字列であることを示したい場合は、行頭を半角アンダーバー（_）で開始してください。<br/>
+　空文字を指定したい場合は半角アンダーバーのみを記述してください。<br/>
+　行頭を半角アンダーバーで開始した場合、Javaのエスケープシーケンスが使えます。</p>
+
+<h2><a name="id2_12"></a>テキスト</h2>
+
+<p>　改行を含む文字列は、直前に改行を入れて記述してください。<br/>
+　テキストの各行は、先頭を「#」以外の文字で始める必要があります。<br/>
+　先頭に「#」がある場合のみ、エスケープのためタブでインデントしてください。<br/>
+　他のハンドルやコレクションが開始すれば、そこで終端とみなします。<br/>
+　たとえば以下なら &quot;吾輩は猫である。\n# 名前はまだ無い。\n&quot;となります。</p>
+
+<pre class="code">
+## novel
+吾輩は猫である。
+	# 名前はまだ無い。
+</pre>
+
+<p>　テキストは、各行を要素とするリストとして保持します。</p>
+
+<h2><a name="id2_13"></a>マップ</h2>
+
+<p>　マップは、各行の行頭に「#-」を記述し、その後にキーとスカラー値を記述します。<br/>
+　キーとスカラー値は半角スペースで区切ります。<br/>
+　キーに改行コード、半角スペース、半角シャープ(#)、半角スラッシュ(/)、半角コロン(:)は使用できません。<br/>
+　キーは必ず文字列となる（他のデータ型をキーとできない）ことに注意してください。</p>
+
+<pre class="code">
+#-age 19
+#-country Japan
+</pre>
+
+<p>　テキストを値とするときは、キーの後に改行を入れて記述してください。</p>
+
+<pre class="code">
+#-memo
+日曜日に工事がある。
+本屋へ行くのはその後で。
+</pre>
+
+<h2><a name="id2_14"></a>コメント</h2>
+
+<p>　ハンドル開始行、テキスト、コレクションの後にコメントを記述できます。<br/>
+　コメントは行頭を「#」で始めてください。<br/>
+　「#」の後に半角スペースが必要です。<br/>
+　コメントは、その直上にある要素へのコメントとみなします。</p>
+
+<p>以上</p>
+</article>
+
+<footer class="container">
+<a href="index.html">戻る</a>
+</footer>
+
+</body>
+</html>

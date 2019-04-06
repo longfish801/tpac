@@ -21,7 +21,7 @@ import org.apache.commons.text.StringEscapeUtils;
 @Slf4j('LOG')
 trait TeaHandle {
 	/** ConfigObject */
-	static final ConfigObject cnst = ExchangeResource.config(TeaHandle.class);
+	static final ConfigObject cnstTeaHandle = ExchangeResource.config(TeaHandle.class);
 	/** タグ */
 	String tag;
 	/** 名前 */
@@ -77,15 +77,28 @@ trait TeaHandle {
 	}
 	
 	/**
-	 * このハンドラならびに下位ハンドラの妥当性を検証します。
+	 * このハンドラの妥当性を検証します。<br/>
+	 * このメソッドは {@link TeaServer#soak(def)}からハンドラを作成したときに呼びます。<br/>
+	 * 必要に応じてオーバーライドし、妥当性の検証や初期化に利用してください。
+	 * @see #validateBasic()
+	 * @throws TeaMakerMakeException 妥当性の検証で問題がみつかりました。
 	 */
 	void validate(){
+		// なにもしません
+	}
+	
+	/**
+	 * このハンドラならびに下位ハンドラの妥当性を検証します。
+	 * @see #validate()
+	 * @throws TeaMakerMakeException 妥当性の検証で問題がみつかりました。
+	 */
+	void validateBasic(){
 		// スカラー値をチェックするクロージャです
 		Closure checkScalar = { def val ->
 			try {
 				TpacScalar.format(val);
 			} catch (IllegalArgumentException exc){
-				throw new TeaMakerMakeException("名前の値が不正です。name=${name}");
+				throw new TeaMakerMakeException("スカラー値が不正です。val=${val}");
 			}
 		}
 		// コレクションを再帰的にチェックするクロージャです
@@ -98,7 +111,7 @@ trait TeaHandle {
 					break;
 				case Map:
 					target.each { String key, def elem ->
-						if (!(key ==~ cnst.pattern.mapkey)) throw new TeaMakerMakeException("マップキーの値が不正です。key=${key}");
+						if (!(key ==~ cnstTeaHandle.pattern.mapkey)) throw new TeaMakerMakeException("マップキーの値が不正です。key=${key}");
 						(elem instanceof List || elem instanceof Map)? checkCollec(elem) : checkScalar(elem);
 					}
 					break;
@@ -106,12 +119,15 @@ trait TeaHandle {
 			}
 		}
 		// ハンドルが保持する値を検証します
-		if (!(tag ==~ cnst.pattern.tag)) throw new TeaMakerMakeException("タグの値が不正です。tag=${tag}");
-		if (!(name ==~ cnst.pattern.name)) throw new TeaMakerMakeException("名前の値が不正です。name=${name}");
+		if (!(tag ==~ cnstTeaHandle.pattern.tag)) throw new TeaMakerMakeException("タグの値が不正です。tag=${tag}");
+		if (!(name ==~ cnstTeaHandle.pattern.name)) throw new TeaMakerMakeException("名前の値が不正です。name=${name}");
 		checkScalar(scalar);
 		checkCollec(list);
 		checkCollec(map);
-		lowers.values().each { it.validate() }
+		// 上記以外にチェックすべき妥当性があれば検証します
+		validate();
+		// 下位ハンドラの妥当性を検証します
+		lowers.values().each { it.validateBasic() }
 	}
 	
 	/**
@@ -120,7 +136,7 @@ trait TeaHandle {
 	 * @return 識別キー
 	 */
 	String getKey(){
-		return "${tag}${cnst.path.key}${name}" as String;
+		return "${tag}${cnstTeaHandle.path.key}${name}" as String;
 	}
 	
 	/**
@@ -137,7 +153,7 @@ trait TeaHandle {
 	 * @throws IllegalStateException 上位ハンドルが設定されていません。
 	 */
 	String getPath(){
-		return "${upper.path}${cnst.path.level}${key}" as String;
+		return "${upper.path}${cnstTeaHandle.path.level}${key}" as String;
 	}
 	
 	/**
@@ -152,16 +168,16 @@ trait TeaHandle {
 			case {it.empty}: // 自ハンドルの場合
 				hndl = this;
 				break;
-			case {it.startsWith(cnst.path.level)}: // 絶対パスの場合
+			case {it.startsWith(cnstTeaHandle.path.level)}: // 絶対パスの場合
 				hndl = upper.path(path);
 				break;
-			case {it.startsWith(cnst.path.upper)}: // 相対的に上位のパスの場合
-				path = path.substring(cnst.path.upper.length());
-				if (path.startsWith(cnst.path.level)) path = path.substring(cnst.path.level.length());
+			case {it.startsWith(cnstTeaHandle.path.upper)}: // 相対的に上位のパスの場合
+				path = path.substring(cnstTeaHandle.path.upper.length());
+				if (path.startsWith(cnstTeaHandle.path.level)) path = path.substring(cnstTeaHandle.path.level.length());
 				hndl = upper.path(path);
 				break;
 			default: // 上記以外の場合、下位のハンドルを参照します
-				if (cnst.path.handles.every { !(path ==~ it) }){
+				if (cnstTeaHandle.path.handles.every { !(path ==~ it) }){
 					throw new IllegalArgumentException("パスから参照先を特定できません。path=${path}");
 				}
 				Matcher matcher = Matcher.getLastMatcher();
@@ -194,9 +210,9 @@ trait TeaHandle {
 		// 宣言あるいはハンドルの階層を表す文字列を返すクロージャです
 		Closure hndlLvl = { int lvl ->
 			switch (lvl){
-				case 0: return "${cnst.tostr.decLevel}";
-				case 1..3: return "${cnst.tostr.handleLevel * lvl}";
-				default: return "${lvl}${cnst.tostr.handleLevel}";
+				case 0: return "${cnstTeaHandle.tostr.decLevel}";
+				case 1..3: return "${cnstTeaHandle.tostr.handleLevel * lvl}";
+				default: return "${lvl}${cnstTeaHandle.tostr.handleLevel}";
 			}
 		}
 		// リストあるいはマップの文字列表現を出力するクロージャです
@@ -207,14 +223,14 @@ trait TeaHandle {
 				case List:
 					target.each { def elem ->
 						String div = (elem instanceof List || elem instanceof Map)? System.lineSeparator() : '';
-						writer << String.format(cnst.tostr.listFormat, cnst.tostr.collecLevel * lvl, div);
+						writer << String.format(cnstTeaHandle.tostr.listFormat, cnstTeaHandle.tostr.collecLevel * lvl, div);
 						writeCollec(elem, lvl + 1);
 					}
 					break;
 				case Map:
 					target.each { String key, def elem ->
 						String div = (elem instanceof List || elem instanceof Map)? System.lineSeparator() : ' ';
-						writer << String.format(cnst.tostr.mapFormat, cnst.tostr.collecLevel * lvl, key, div);
+						writer << String.format(cnstTeaHandle.tostr.mapFormat, cnstTeaHandle.tostr.collecLevel * lvl, key, div);
 						writeCollec(elem, lvl + 1);
 					}
 					break;
@@ -223,10 +239,10 @@ trait TeaHandle {
 		}
 		// コメントの文字列表現を出力するクロージャです
 		Closure writeComments = { List cmnt ->
-			cmnt.each { writer << String.format(cnst.tostr.commentFormat, it) }
+			cmnt.each { writer << String.format(cnstTeaHandle.tostr.commentFormat, it) }
 		}
 		// ハンドル開始行
-		writer << String.format(cnst.tostr.handleFormat, hndlLvl(level), tag, addDiv(name, name), addDiv(scalar, TpacScalar.format(scalar)));
+		writer << String.format(cnstTeaHandle.tostr.handleFormat, hndlLvl(level), tag, addDiv(name, name), addDiv(scalar, TpacScalar.format(scalar)));
 		writeComments(comment.handle);
 		// リスト
 		if (list != null) writeCollec(list, 0);

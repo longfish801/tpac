@@ -5,7 +5,6 @@
  */
 package io.github.longfish801.tpac;
 
-import groovy.transform.InheritConstructors;
 import groovy.util.logging.Slf4j;
 import io.github.longfish801.shared.ArgmentChecker;
 import io.github.longfish801.tpac.element.TeaHandle;
@@ -18,43 +17,29 @@ import io.github.longfish801.tpac.parser.TpacMaker;
 import java.util.regex.Matcher;
 
 /**
- * tpac文書を保持します。
+ * tpac文書を保持する特性です。
  * @version 1.0.00 2018/08/16
  * @author io.github.longfish801
  */
 @Slf4j('LOG')
-class TeaServer {
+trait TeaServer {
 	/** 識別キーと宣言とのマップ */
 	Map<String, TeaDec> decs = [:];
 	/** TeaParty */
-	TeaParty teaParty;
+	TeaParty teaParty = new TeaParty(this);
 	
 	/**
-	 * コンストラクタ。
+	 * 宣言のタグに対応する TeaMakerを返します。
+	 * @param tag 宣言のタグ
+	 * @return TeaMaker
 	 */
-	TeaServer(){
-		teaParty = new TeaParty(new TpacMaker().setup(this));
-	}
-	
-	/**
-	 * 宣言のタグとTeaMakerとの関連付けを追加します。<br/>
-	 * TeaMakerのメンバ変数にTeaServerを設定し、
-	 * TeaPartyに格納します。
-	 * @param makers TeaMakerのリスト
-	 * @return 自インスタンス
-	 */
-	TeaServer appendMakers(List makers){
-		ArgmentChecker.checkNotEmptyList('TeaMakerのリスト', makers);
-		makers.each { TeaMaker maker ->
-			maker.setup(this);
-			teaParty.makerMap[maker.decTag] = maker;
-		}
-		return this;
+	TeaMaker maker(String tag){
+		return new TpacMaker();
 	}
 	
 	/**
 	 * tpac文書を解析します。
-	 * @param reader 処理対象
+	 * @param reader 処理対象（File、URL、String、BufferedReaderのいずれか）
 	 * @return 自インスタンス
 	 */
 	TeaServer soak(def source){
@@ -96,20 +81,14 @@ class TeaServer {
 	 */
 	TeaHandle path(String path){
 		ArgmentChecker.checkNotBlank('パス', path);
-		if (TpacHandle.cnst.path.decs.every { !(path ==~ it) }){
+		if (TpacHandle.cnstTeaHandle.path.decs.every { !(path ==~ it) }){
 			throw new IllegalArgumentException("パスから宣言を特定できません。path=${path}");
 		}
 		Matcher matcher = Matcher.getLastMatcher();
 		String dec = matcher.group(1);
 		String other = (matcher.groupCount() >= 2)? matcher.group(2) : null;
-		TeaHandle hndl = (other == null)? this.getAt(dec) : this.getAt(dec).path(other);
+		TeaHandle hndl = (other == null)? this.getAt(dec) : this.getAt(dec)?.path(other);
 		if (hndl == null) throw new IllegalArgumentException("パスから宣言を特定できません。path=${path}");
 		return hndl;
 	}
-	
-	/**
-	 * tpac文書の解析失敗を表す例外クラスです。
-	 */
-	@InheritConstructors
-	class TeaServerParseException extends Exception { }
 }

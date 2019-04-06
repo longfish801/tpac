@@ -6,7 +6,7 @@
 package io.github.longfish801.tpac.element;
 
 import groovy.util.logging.Slf4j;
-import io.github.longfish801.tpac.TeaServer;
+import io.github.longfish801.tpac.TpacServer;
 import spock.lang.Specification;
 import spock.lang.Unroll;
 import spock.lang.Shared;
@@ -21,7 +21,7 @@ class TpacHandleSpec extends Specification {
 	@Shared TeaDec dec;
 	
 	def setup(){
-		dec = new TpacDec().setup('tpac', 'dec', new TeaServer());
+		dec = new TpacDec().setup('tpac', 'dec', new TpacServer());
 	}
 	
 	def 'タグ、名前、上位ハンドルを格納します。'(){

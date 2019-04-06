@@ -7,6 +7,7 @@ package io.github.longfish801.tpac.element;
 
 import groovy.util.logging.Slf4j;
 import io.github.longfish801.tpac.TeaServer;
+import io.github.longfish801.tpac.TpacServer;
 import spock.lang.Specification;
 import spock.lang.Unroll;
 import spock.lang.Shared;
@@ -21,7 +22,7 @@ class TpacDecSpec extends Specification {
 	@Shared TeaServer server;
 	
 	def setup(){
-		server = new TeaServer();
+		server = new TpacServer();
 	}
 	
 	def 'タグ、名前を格納します。'(){

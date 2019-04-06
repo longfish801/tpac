@@ -17,11 +17,11 @@ import io.github.longfish801.shared.ArgmentChecker;
 class TpacText extends ArrayList {
 	/**
 	 * 各行の末尾に改行を付与して連結したテキストを返します。<br/>
-	 * テキストが未格納であれば nullを返します。
+	 * テキストが未格納であれば空文字を返します。
 	 * @return 各行の末尾に改行を付与して連結したテキスト
 	 */
 	String toString(){
-		return (this.empty)? null : this.collect {"${it}${System.lineSeparator()}" }.join();
+		return (this.empty)? '' : this.collect {"${it}${System.lineSeparator()}" }.join();
 	}
 	
 	/**
@@ -32,8 +32,8 @@ class TpacText extends ArrayList {
 		ArgmentChecker.checkNotNull('Writer', writer);
 		this.each {
 			writer << (
-				(it.startsWith(TpacHandle.cnst.tostr.textMeta))?
-				"${TpacHandle.cnst.tostr.textEscape}${it}${System.lineSeparator()}" : 
+				(it ==~ TpacHandle.cnstTeaHandle.tostr.textMeta)?
+				"${TpacHandle.cnstTeaHandle.tostr.textEscape}${it}${System.lineSeparator()}" : 
 				"${it}${System.lineSeparator()}"
 			)
 		}
