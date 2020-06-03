@@ -1,51 +1,175 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>tpac</title>
-<link href="/tpac/_asset/style.css" rel="stylesheet">
-<script src="/tpac/_asset/script.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Serif+JP:400,700&amp;subset=japanese">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+<style type="text/css">
+<!--
+body {
+	font-family: 'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;
+	letter-spacing: 0.05rem;
+	line-height: 2.3rem;
+	text-align: justify;
+	word-wrap: break-word;
+}
+h2 {
+	margin-top: 2rem;
+}
+div.container {
+	margin-bottom: 3rem;
+}
+pre {
+	padding: 0.5rem;
+	line-height: 1.3rem;
+	background-color: oldlace;
+}
+th, td {
+	border: solid 1px black;
+	padding: 0rem 0.5rem;
+}
+th {
+	text-align: center;
+}
+-->
+</style>
+<title> tpac</title>
 </head>
 <body>
 
-<header class="container">
-<h1>tpac</h1>
+<div class="container">
+<div class="row justify-content-center">
+<div class="col-lg-9">
 
-<nav class="list-group">
-<a href="#id2_1" class="list-group-item">概要</a>
-<a href="#id2_2" class="list-group-item">ドキュメント</a>
-<a href="#id2_3" class="list-group-item">API仕様書</a>
-</nav>
-</header>
-
-<article class="container">
-<h2><a name="id2_1"></a>概要</h2>
-
-<p>　tpac文書を扱います。<br/>
-　tpac記法は、改行を含む長めの文章や、親子関係を簡単に記述するための記法です。</p>
-
-<h2><a name="id2_2"></a>ドキュメント</h2>
-
+<h1><a href="#tpac" id="tpac"></a>tpac</h1>
 <ul>
-<li><a href="tpac.html">tpac記法</a></li>
+<li><a href="#概要">概要</a></li>
+<li><a href="#特徴">特徴</a></li>
+<li><a href="#サンプルコード">サンプルコード</a></li>
+<li><a href="#githubリポジトリ">GitHubリポジトリ</a></li>
+<li><a href="#ドキュメント">ドキュメント</a></li>
+<li><a href="#mavenリポジトリ">Mavenリポジトリ</a></li>
 </ul>
-
-<h2><a name="id2_3"></a>API仕様書</h2>
-
-<p>　API仕様書(Groovydoc)は以下を参照してください。</p>
-
+<h2><a href="#概要" id="概要"></a>概要</h2>
+<p>　複数行のテキストを含む文書を操作します。<br />
+　いくつもの短い文章やスクリプトをひとつのファイルに整理したいときに便利です。</p>
+<p>　個人が学習のために開発したものです。<br />
+　故障対応や問合せ回答などのサポートはしていません。</p>
+<h2><a href="#特徴" id="特徴"></a>特徴</h2>
 <ul>
-<li><a href="groovydoc/index.html">Groovydoc</a></li>
+<li>tpac文書を解析、参照、文字列化、マージできます。<br />
+tpac文書は tpac記法で記述された文書です。</li>
+<li>tpac記法は複数行のテキストを記述しやすい記法です。<br />
+インデントの挿入やエスケープなしに、自由にテキストを記述できます。</li>
+<li>tpac文書を独自の DSLとして利用することができます。</li>
 </ul>
+<p>　このライブラリの名称は &quot;Text, Parent And Child&quot;の頭文字に由来しています。</p>
+<h2><a href="#サンプルコード" id="サンプルコード"></a>サンプルコード</h2>
+<p>　以下に tpac文書のサンプルを示します（src/test/resources/sample.tpac）。</p>
+<pre><code>#! thread
+#&gt;
 
-<p>以上</p>
-</article>
+#&gt; mail:1
+#-from Lucy
+Hi everyone.
+Any good scripts?
+#&gt;
 
-<footer class="container">
-<a href="..">戻る</a>
-</footer>
+#&gt;&gt; mail:2
+#:Reply message for 1
+#-from Tom
+#-attachment @/attachment:2/script
+How about this?
+#&gt;
+
+#&gt;&gt; mail:3
+#:Reply message for 1
+#-from Lucy
+#-attachment @/attachment:3/result#_
+Oh ...
+Great job!
+#&gt;
+
+#!
+
+#! attachment:2
+#&gt;
+
+#&gt; script
+#-command
+groovy hello.groovy
+#-hello
+println 'Hello, World!'
+println 'Hello, tpac!'
+#&gt;
+
+#!
+
+#! attachment:3
+#&gt;
+
+#&gt; result
+Hello, World!
+Hello, tpac!
+#&gt;
+
+#!
+</code></pre>
+<p>　上記の tpac文書を読みこんで、assertで内容を確認するスクリプトです（src/test/groovy/Sample.groovy）。</p>
+<pre><code>import io.github.longfish801.tpac.TpacServer
+
+def server
+try {
+	server = new TpacServer().soak(new File('src/test/resources/sample.tpac'))
+} catch (exc){
+	exc.printStackTrace()
+}
+
+def thread = server['thread']
+assert thread.key == 'thread'
+assert thread.lowers['mail:1'].from == 'Lucy'
+assert thread.lowers['mail:1']._ == [ 'Hi everyone.', 'Any good scripts?' ]
+assert thread.lowers['mail:1'].lowers['mail:2'].comments == [ 'Reply message for 1' ]
+def mail2 = thread.solvePath('mail:1/mail:2')
+assert mail2.attachment.refer().hello == [ &quot;println 'Hello, World!'&quot;, &quot;println 'Hello, tpac!'&quot; ]
+def mail3 = server.solvePath('/thread/mail:1/mail:3')
+assert mail3.from == 'Lucy'
+assert mail3.attachment.refer() == [ 'Hello, World!', 'Hello, tpac!' ]
+assert server.findAll(/^attachment:\d+$/).collect { it.key } == [ 'attachment:2', 'attachment:3' ]
+</code></pre>
+<p>　このサンプルコードは build.gradle内の execSampleタスクで実行しています。</p>
+<h2><a href="#githubリポジトリ" id="githubリポジトリ"></a>GitHubリポジトリ</h2>
+<ul>
+<li><a href="https://github.com/longfish801/tpac">tpac</a></li>
+</ul>
+<h2><a href="#ドキュメント" id="ドキュメント"></a>ドキュメント</h2>
+<ul>
+<li><a href="groovydoc/">Groovydoc</a></li>
+<li><a href="notation.html">tpac記法</a></li>
+<li><a href="dsl.html">DSLの利用</a></li>
+</ul>
+<h2><a href="#mavenリポジトリ" id="mavenリポジトリ"></a>Mavenリポジトリ</h2>
+<p>　本ライブラリの JARファイルを <a href="https://github.com/longfish801/maven">GitHub上の Mavenリポジトリ</a>で公開しています。<br />
+　build.gradleの記述例を以下に示します。</p>
+<pre><code>repositories {
+	mavenCentral()
+	maven { url 'https://longfish801.github.io/maven/' }
+}
+
+dependencies {
+	implementation group: 'io.github.longfish801', name: 'tpac', version: '0.3.00'
+}
+</code></pre>
+
+</div><!-- end of col -->
+</div><!-- end of row -->
+</div><!-- end of container -->
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
 </body>
 </html>

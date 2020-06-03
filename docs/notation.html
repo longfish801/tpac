@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Serif+JP:400,700&amp;subset=japanese">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+<style type="text/css">
+<!--
+body {
+	font-family: 'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;
+	letter-spacing: 0.05rem;
+	line-height: 2.3rem;
+	text-align: justify;
+	word-wrap: break-word;
+}
+h2 {
+	margin-top: 2rem;
+}
+div.container {
+	margin-bottom: 3rem;
+}
+pre {
+	padding: 0.5rem;
+	line-height: 1.3rem;
+	background-color: oldlace;
+}
+th, td {
+	border: solid 1px black;
+	padding: 0rem 0.5rem;
+}
+th {
+	text-align: center;
+}
+-->
+</style>
+<title> tpac記法</title>
+</head>
+<body>
+
+<div class="container">
+<div class="row justify-content-center">
+<div class="col-lg-9">
+
+<h1><a href="#tpac記法" id="tpac記法"></a>tpac記法</h1>
+<ul>
+<li><a href="#概要">概要</a></li>
+<li><a href="#宣言">宣言</a></li>
+<li><a href="#宣言終端">宣言終端</a></li>
+<li><a href="#ハンドル">ハンドル</a>
+<ul>
+<li><a href="#ハンドルの構造">ハンドルの構造</a></li>
+<li><a href="#ハンドルの親子関係">ハンドルの親子関係</a></li>
+<li><a href="#ハンドル開始行">ハンドル開始行</a></li>
+</ul>
+</li>
+<li><a href="#ハンドル終端">ハンドル終端</a></li>
+<li><a href="#コメント">コメント</a></li>
+<li><a href="#マップ">マップ</a>
+<ul>
+<li><a href="#デフォルトキー">デフォルトキー</a></li>
+</ul>
+</li>
+<li><a href="#スカラー値">スカラー値</a>
+<ul>
+<li><a href="#データ型">データ型</a></li>
+<li><a href="#参照とパス">参照とパス</a></li>
+</ul>
+</li>
+<li><a href="#テキスト">テキスト</a></li>
+<li><a href="#空行について">空行について</a></li>
+</ul>
+<h2><a href="#概要" id="概要"></a>概要</h2>
+<p>　tpac記法は複数行のテキストを記述しやすい記法です。<br />
+　インデントの挿入やエスケープなしに、自由にテキストを記述できます。<br />
+　以下のとおり、既存の記法では難しいことから独自に作成しました。</p>
+<ul>
+<li>XMLはテキストを記述できますが、エスケープが必要で表現が冗長です。<br />
+Markdownもテキストを記述できますが、データの階層構造を表現することには向いていません。</li>
+<li>JSONにはテキストのための記法がありません。<br />
+YAMLにはありますが、インデントを入れる手間がかかります。</li>
+<li>Groovy DSLは文法的な誤りを含むコードを記述できません。</li>
+</ul>
+<p>　tpac文書はハンドルの集合です。<br />
+　ハンドルとはマップにタグと名前を与えたものです。<br />
+　頂点にひとつのハンドルがあり、そこに他のハンドルが子孫としてぶら下がります。<br />
+　ハンドルは値として、文字列や数値、複数行のテキストなどを保持します。</p>
+<p>　識別のためハンドルはタグと名前を持ちます。<br />
+　これは HTMLのタグと id属性の考え方を参考にしています。<br />
+　種類として同じものには同じタグを与えます。<br />
+　同じタグのハンドルからひとつを区別するために名前を付与します。</p>
+<h2><a href="#宣言" id="宣言"></a>宣言</h2>
+<p>　tpac文書は宣言で開始します。<br />
+　宣言より前の記述はすべて無視します。</p>
+<p>　行頭を半角シャープ(#)＋半角エクスクラメーションマーク(!)＋半角スペースで開始します。<br />
+　半角スペースが必要なことに注意してください。</p>
+<pre><code>#! tea:アッサム
+</code></pre>
+<p>　行頭記号が異なるだけで、宣言もハンドルのひとつです。<br />
+　tpac文書の最上位にあるハンドルです。</p>
+<h2><a href="#宣言終端" id="宣言終端"></a>宣言終端</h2>
+<p>　tpac文書を明示的に終了するには宣言終端を記述します。<br />
+　宣言より後の記述は、他の tpac文書の宣言がない限り、すべて無視します。</p>
+<p>　半角シャープ(#)＋半角エクスクラメーションマーク(!)のみの行を記述してください。</p>
+<pre><code>#!
+</code></pre>
+<p>　宣言終端は記述を省略できます。<br />
+　他の宣言があれば新たな tpac文書の開始とみなします。</p>
+<h2><a href="#ハンドル" id="ハンドル"></a>ハンドル</h2>
+<p>　tpac文書はひとつ以上のハンドルによって構成されます。<br />
+　ハンドルは、タグと名前によって識別されるマップです。</p>
+<h3><a href="#ハンドルの構造" id="ハンドルの構造"></a>ハンドルの構造</h3>
+<p>　以下にハンドルの構造を示します。<br />
+　ハンドルは開始行、コメント、マップ、終端の順番で記述します。</p>
+<pre><code>#&gt; user:Smith        ← ハンドル開始行（一行のみ、必須）
+#:User info of Smith ← コメント（複数行、省略可）
+#-age 17             ← マップ（複数行、省略可）
+#&gt;                   ← ハンドル終端（一行のみ、省略可）
+</code></pre>
+<h3><a href="#ハンドルの親子関係" id="ハンドルの親子関係"></a>ハンドルの親子関係</h3>
+<p>　ハンドル同士の親子関係を記述できます。</p>
+<p>　ハンドル開始行の行頭を半角シャープ(#)＋半角数字＋半角大なり(&gt;)＋半角スペースで開始します。<br />
+　半角スペースが必要なことに注意してください。<br />
+　半角数字は階層を表します。1以上の値を指定してください。<br />
+　階層をスキップすることはできません。たとえば階層1のハンドルの後ろに階層3のハンドルを記述することはできません。</p>
+<p>　たとえば以下の親子関係を表したいとします。</p>
+<pre><code>親
+├子1
+│└孫11
+├子2
+└子3
+　├孫31
+　└孫32
+</code></pre>
+<p>　以下のように表現できます。</p>
+<pre><code>#1&gt; family:親
+#2&gt; family:子1
+#3&gt; family:孫11
+#2&gt; family:子2
+#2&gt; family:子3
+#3&gt; family:孫31
+#3&gt; family:孫32
+</code></pre>
+<p>　階層が 1～3の場合のみ、省略記法が使えます。<br />
+　数値の代わりに半角大なり(&gt;)のくりかえしを用います。<br />
+　以下は、上記と同じ親子関係を表しています。</p>
+<pre><code>#&gt; family:親
+#&gt;&gt; family:子1
+#&gt;&gt;&gt; family:孫11
+#&gt;&gt; family:子2
+#&gt;&gt; family:子3
+#&gt;&gt;&gt; family:孫31
+#&gt;&gt;&gt; family:孫32
+</code></pre>
+<p>　宣言もハンドルです。<br />
+　ひとつの tpac文書に宣言はひとつのみ、最上位にあるハンドルとなります。</p>
+<h3><a href="#ハンドル開始行" id="ハンドル開始行"></a>ハンドル開始行</h3>
+<p>　ハンドル開始行には以下を記述します。<br />
+　デフォルトキーについては <a href="#デフォルトキー">デフォルトキー</a>を参照してください。</p>
+<p>・親子関係の階層（必須）<br />
+・タグ（必須）<br />
+・名前（省力可）<br />
+・デフォルトキーに紐づけられたスカラー値（省力可）</p>
+<p>　以下にハンドルの例を示します。</p>
+<pre><code>#&gt; hobby:groovy It's programming language.
+</code></pre>
+<p>　上記のハンドルには以下が記述されています。</p>
+<p>・親子関係の階層：1<br />
+・タグ：文字列 &quot;hobby&quot;<br />
+・名前：文字列 &quot;groovy&quot;<br />
+・デフォルトキーに紐づけられたスカラー値：文字列 &quot;It's programming language.&quot;</p>
+<p>　タグと名前は半角コロン(:)区切りで記述します。<br />
+　デフォルトキーに紐づけられたスカラー値を指定する場合は、タグと名前の後ろに半角スペース区切りで記述します。</p>
+<p>　タグは必須です。<br />
+　同じ宣言あるいは同じ親ハンドルに属す複数のハンドルがあるとき、タグは重複しても構いません。<br />
+　タグに改行コード、半角スペース、半角シャープ(#)、半角スラッシュ(/)、半角コロン(:)は使用できません。</p>
+<p>　名前は省略可です。<br />
+　省略時は空文字を指定したとみなします。タグとの区切り記号である半角コロン(:)は記述しません。<br />
+　同じ宣言あるいは同じ親ハンドルに属す複数のハンドルがあるとき、タグと名前の組合せに重複は許されません。<br />
+　名前に改行コード、半角スペース、半角シャープ(#)、半角スラッシュ(/)、半角コロン(:)は使用できません。</p>
+<h2><a href="#ハンドル終端" id="ハンドル終端"></a>ハンドル終端</h2>
+<p>　ハンドルを明示的に終了するにはハンドル終端を記述します。<br />
+　ハンドル終端より後の記述は、他の宣言やハンドル開始行がない限り、すべて無視します。</p>
+<p>　半角シャープ(#)＋半角大なり(&gt;)のみの行を記述してください。</p>
+<pre><code>#&gt;
+</code></pre>
+<p>　ハンドル終端は記述を省略できます。<br />
+　他の宣言があれば新たな tpac文書の開始とみなします。<br />
+　他のハンドル開始行があれば新たなハンドルの開始とみなします。</p>
+<h2><a href="#コメント" id="コメント"></a>コメント</h2>
+<p>　コメントはハンドルについて説明や注記を記述します。</p>
+<p>　行頭を半角シャープ(#)＋半角コロン(:)で開始します。</p>
+<pre><code>#&gt; life
+#:Life is a dream.
+</code></pre>
+<p>　コメントは各行をリストとして保持します。<br />
+　行末の改行コードは保持しないことに注意してください。</p>
+<h2><a href="#マップ" id="マップ"></a>マップ</h2>
+<p>　マップは、キーと値の集合です。<br />
+　ひとつのキーに指定できる値はひとつのみです。</p>
+<p>　行頭を半角シャープ(#)＋半角(-)で開始します。<br />
+　その後にキーとスカラー値を記述します。<br />
+　キーとスカラー値は半角スペースで区切ります。<br />
+　テキストを値にするには、キーの後に改行を入れて記述します。</p>
+<pre><code>#&gt; capulet:juliet
+#-age 13
+#-detail
+She loves Romeo.
+</code></pre>
+<p>　以下のように、本来ならテキストを指定すべきところになにも指定しないことはできません。</p>
+<pre><code>#&gt; capulet:juliet
+#-detail
+#&gt;
+</code></pre>
+<p>　キーは必須です。<br />
+　ひとつのマップ内でキーの重複は許されません。<br />
+　キーに改行コード、半角スペース、半角シャープ(#)、半角スラッシュ(/)、半角コロン(:)は使用できません。<br />
+　キーのデータ型は文字列です。他のデータ型をキーとすることはできません。</p>
+<p>　値は必須です。<br />
+　スカラー値あるいはテキストを指定可能です。<br />
+　一般的にはテキストもスカラー値です。tpac記法では複数行のテキストを、各行を要素とするリストとみなすため、スカラー値とは区別しています。</p>
+<h3><a href="#デフォルトキー" id="デフォルトキー"></a>デフォルトキー</h3>
+<p>　マップは特殊なキーとしてデフォルトキーを持ちます。<br />
+　ひとつのマップにひとつだけ、キーを省略して値を指定することができます。<br />
+　デフォルトキーの実体は半角アンダーバー(_)です。</p>
+<p>　デフォルトキーに値を指定するには以下の方法があります。</p>
+<p>・ハンドル開始行にスカラー値を記述する<br />
+・キーが指定されていないテキストを記述する</p>
+<p>　ハンドル開始行にスカラー値を記述する例を示します。<br />
+　文字列 &quot;Cutest animals.&quot;がデフォルトキーの値です。</p>
+<pre><code>#&gt; cat Cutest animals.
+</code></pre>
+<p>　デフォルトキーの実体は半角アンダーバー(_)のため、以下は上記と同義です。</p>
+<pre><code>#&gt; cat
+#-_ Cutest animals.
+</code></pre>
+<p>　キーが指定されていないテキストを記述する例を示します。<br />
+　文字列 &quot;Cutest animals.&quot;のみを要素に持つリストがデフォルトキーの値です。</p>
+<pre><code>#&gt; cat
+Cutest animals.
+</code></pre>
+<p>　同じキーに値はひとつしか指定できません。これはデフォルトキーも同じです。<br />
+　以下のようにキーが指定されていないテキストを複数記述することはできません。</p>
+<pre><code>#&gt; cat
+Cutest animals.
+#-question really?
+Believe me!
+</code></pre>
+<h2><a href="#スカラー値" id="スカラー値"></a>スカラー値</h2>
+<p>　スカラー値は、なんらかのデータ型の、単体の値です。</p>
+<h3><a href="#データ型" id="データ型"></a>データ型</h3>
+<p>　以下のデータ型のスカラー値を指定できます。</p>
+<ul>
+<li>Null値（固定文字列 &quot;null&quot;）</li>
+<li>真偽（固定文字列 &quot;true&quot;, &quot;false&quot;）</li>
+<li>整数（12, 0, -3など）
+<ul>
+<li>正規表現 /-?\d+/とマッチする文字列。<br />
+java.lang.Integerとして保持します。</li>
+</ul>
+</li>
+<li>浮動小数点（0.05, -1.0など）
+<ul>
+<li>正規表現 /-?\d+.\d+/とマッチする文字列。<br />
+java.math.BigDecimalとして保持します。</li>
+</ul>
+</li>
+<li>参照（@始まり）
+<ul>
+<li>他のハンドルやハンドルが保持する値への参照。</li>
+</ul>
+</li>
+<li>正規表現（:始まり）
+<ul>
+<li>java.util.regex.Pattern#compile(String)の戻り値を保持します。</li>
+</ul>
+</li>
+<li>Groovy評価値（=始まり）
+<ul>
+<li>指定された文字列を Groovyスクリプトとして評価した値を返します。<br />
+groovy.util.Eval#meメソッドでの実行結果を返します。<br />
+たとえば一日の秒数を&quot;= 60 * 60 * 24&quot;と表現することができます。</li>
+</ul>
+</li>
+<li>文字列（_始まり、あるいは上記以外）
+<ul>
+<li>文字列であることを明示的に示したい場合に使います。</li>
+<li>空文字を指定したい場合は半角アンダーバーのみ記述してください。</li>
+<li>Javaのエスケープシーケンス（たとえば&quot;\n&quot;）が使えます。</li>
+</ul>
+</li>
+<li>文字列（上記以外）
+<ul>
+<li>Javaのエスケープシーケンス（たとえば&quot;\n&quot;）が使えません。<br />
+そのまま文字列として解釈します。</li>
+</ul>
+</li>
+</ul>
+<p>　スカラー値は tpac文書を解析した時点で、目的のデータ型に変換します。<br />
+　参照、Groovy評価値は遅延評価します。値を参照されたときに初めて値を取得します。</p>
+<h3><a href="#参照とパス" id="参照とパス"></a>参照とパス</h3>
+<p>　参照は、他のハンドルやハンドルが保持する値を参照するためのものです。</p>
+<p>　パスの作り方は以下のとおりです。<br />
+　ハンドルのタグと名前は半角コロン(:)で連結します。名前がない場合はタグのみです。<br />
+　ハンドル同士の親子関係を半角スラッシュ(/)で連結します。<br />
+　絶対パスの場合はパスの先頭に半角スラッシュ(/)を記述します。<br />
+　相対的に階層がひとつ上位のハンドルを指すには「..」を用います。</p>
+<p>　参照として記述するときは、半角アットマーク(@)から開始し、その後ろにパスを記述します。<br />
+　キーに紐づく値を参照するには、半角シャープ(#)の後ろにキーを記述します。<br />
+　デフォルトキーの値を参照したい場合はキーとして半角アンダーバー(_)を指定します。<br />
+　キーとして空文字を指定する（半角シャープのみ記述する）ことはできません。</p>
+<p>　たとえば以下の tpac文書があったとします。<br />
+　/accounts/persons/person:山田太郎#countryの値は「日本」です。<br />
+　/accounts/persons/person:山田太郎#familyの値は「/family:山田家/person:山田太郎」のパスで示されるハンドルとなります。</p>
+<pre><code>#! accounts
+#&gt; persons
+#&gt;&gt; person:山田太郎
+#-country @../enum/country#jp
+#-family @/family:山田家/person:山田太郎
+#&gt; enum
+#&gt;&gt; country
+#-jp 日本
+#-us アメリカ
+#!
+
+#! family:山田家
+#&gt; person:山田太郎
+#-father 孝太郎
+#-mother 花子
+#!
+</code></pre>
+<h2><a href="#テキスト" id="テキスト"></a>テキスト</h2>
+<p>　テキストは文字列のリストです。<br />
+　各行をリストの要素として保持します。<br />
+　行末の改行コードは保持しないことに注意してください。</p>
+<p>　以下の指定方法があります。</p>
+<ul>
+<li>範囲指定を省略する</li>
+<li>範囲を明示する</li>
+</ul>
+<p>　範囲指定を省略する場合の例を以下に示します。<br />
+　キー memoに対し、値としてリスト [ '吾輩は猫である。', '名前はまだ無い。' ]を指定しています。<br />
+　制限として、先頭が半角シャープで開始する行は記述できません。そのような行を含むテキストを記述したい場合は、範囲を明示する方法を利用してください。</p>
+<pre><code>#-memo
+吾輩は猫である。
+名前はまだ無い。
+</code></pre>
+<p>　範囲を明示する方法は以下のとおりです。<br />
+　半角シャープ(#)と 3つ以上の半角イコール(=)のみから成る行を開始行、終端行とします。<br />
+　開始行と終端行は半角イコールの数が一致する必要があります。</p>
+<p>　範囲を明示する場合、行の先頭に半角シャープ(#)を記述しても構いません。<br />
+　tpac記法特有の記述をしてもテキストとみなされることに注意してください。<br />
+　たとえば以下は、キーmemoに対してリスト [ '吾輩は猫である。', '#&gt; attention 名前はまだ無い。' ]という値を指定しています。二番目の要素 '#&gt; attention 名前はまだ無い。'はハンドルとみなされません。</p>
+<pre><code>#-memo
+#===
+吾輩は猫である。
+#&gt; attention 名前はまだ無い。
+#===
+</code></pre>
+<p>　空リストをテキストとして指定することはできません。<br />
+　たとえば以下の記述はできません。</p>
+<pre><code>#-vacant
+#===
+#===
+</code></pre>
+<h2><a href="#空行について" id="空行について"></a>空行について</h2>
+<p>　ハンドル内の空行はテキストとみなすことに注意してください。<br />
+　たとえば以下のハンドルは、デフォルトキーに値として 2行目でリスト [ '' ]を紐づけているとみなします。</p>
+<pre><code>#&gt; hello
+
+#-jp こんにちは
+#&gt;
+</code></pre>
+<p>　以下は、上記の「#-jp こんにちは」の後ろに空行を足しただけですが、このような記述はできません。<br />
+　デフォルトキーに対して 2行目、4行目それぞれでリスト [ '' ]を紐づけたとみなすためです。同じキーに値はひとつしか指定できません。</p>
+<pre><code>#&gt; hello
+
+#-jp こんにちは
+
+#&gt;
+</code></pre>
+
+</div><!-- end of col -->
+</div><!-- end of row -->
+</div><!-- end of container -->
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+</body>
+</html>

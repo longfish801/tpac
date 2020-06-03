@@ -3,144 +3,146 @@
  *
  * Copyright (C) io.github.longfish801 All Rights Reserved.
  */
-package io.github.longfish801.tpac;
+package io.github.longfish801.tpac
 
-import groovy.util.logging.Slf4j;
-import io.github.longfish801.tpac.element.TeaDec;
-import io.github.longfish801.tpac.element.TeaHandle;
-import io.github.longfish801.tpac.parser.TeaMaker;
-import io.github.longfish801.tpac.parser.TeaMakerMakeException;
-import spock.lang.Specification;
-import spock.lang.Unroll;
-import spock.lang.Shared;
+import groovy.util.logging.Slf4j
+import io.github.longfish801.tpac.TpacMsg as msgs
+import spock.lang.Specification
+import spock.lang.Unroll
+import spock.lang.Shared
 
 /**
  * TpacServerクラスのテスト。
- * @version 1.0.00 2018/09/01
+ * @version 0.3.00 2020/06/03
  * @author io.github.longfish801
  */
 @Slf4j('LOG')
 class TpacServerSpec extends Specification {
 	/** TpacServer */
-	@Shared TpacServer server;
+	@Shared TpacServer server
 	
 	def setup(){
-		server = new TpacServer();
+		server = new TpacServer()
 	}
 	
-	def 'tpac文書を解析します。'(){
+	def 'newMaker'(){
 		given:
-		String source;
-		TeaServerParseException exc;
+		TpacMaker maker
+		
+		when:
+		maker = server.newMaker('tpac')
+		then:
+		maker instanceof TpacMaker
+	}
+	
+	def 'newParty'(){
+		given:
+		TpacParty party
+		
+		when:
+		party = server.newParty()
+		then:
+		party instanceof TpacParty
+		party.server == server
+	}
+	
+	def 'soak'(){
+		given:
+		String source
 		
 		when:
 		source = '''\
 			#! tpac
-			'''.stripIndent();
-		server.soak(source);
+			#! tpac:second
+			'''.stripIndent()
+		server.soak(source)
 		then:
-		server['tpac:'].key == 'tpac:';
+		server['tpac'].key == 'tpac'
+		server['tpac:second'].key == 'tpac:second'
+	}
+	
+	def 'leftShift'(){
+		given:
+		TpacDec dec = new TpacDec(tag: 'dec')
 		
 		when:
-		source = '''\
-			#! tpac error
-			#	_a
-			'''.stripIndent();
-		server.soak(source);
+		server << dec
 		then:
-		exc = thrown(TeaServerParseException);
-		exc.message == 'tpac文書の構築が記述誤りのため失敗しました。lineNo=2 line=#	_a';
+		dec.server == server
+		server.decs['dec'] == dec
+	}
+	
+	def 'getAt'(){
+		given:
+		TpacDec dec = new TpacDec(tag: 'dec', name: 'some')
+		
+		when:
+		server << dec
+		then:
+		server['dec:some'] == dec
+	}
+	
+	def 'propertyMissing'(){
+		given:
+		TpacDec dec = new TpacDec(tag: 'dec')
+		
+		when:
+		server << dec
+		then:
+		server.dec == dec
 	}
 	
 	@Unroll
-	def 'tpac文書からパスに対応するハンドルを参照します。'(){
+	def 'solvePath'(){
 		given:
-		String source = '''\
-			#! tpac hello
-			#> handle bye
-			'''.stripIndent();
-		server.soak(source);
+		TpacDec dec = new TpacDec(tag: 'dec')
+		TpacHandle handle = new TpacHandle(tag: 'handle')
+		server << dec
+		dec << handle
 		
 		expect:
-		server.path(path).path == expect;
+		server.solvePath(path).path == expect
 		
 		where:
-		path						|| expect
-		'/tpac:hello'				|| '/tpac:hello';
-		'/tpac:hello/handle:bye'	|| '/tpac:hello/handle:bye';
+		path			|| expect
+		'/dec'			|| '/dec'
+		'/dec/handle'	|| '/dec/handle'
 	}
 	
-	def 'tpac記法をベースとする独自記法を実装します。'(){
+	def 'solvePath - exception'(){
 		given:
-		String source;
-		TeaDec dec;
-		TeaServerParseException exc;
-		TeaServer someServer;
+		TpacHandlingException exc
 		
 		when:
-		source = '''\
-			#! some body 123
-			#> thing
-			#-important @/tpac:/handle:aaa#scalar
-			#! tpac
-			#> handle aaa 456
-			'''.stripIndent();
-		someServer = new SomeServer();
-		someServer.soak(source);
-		dec = someServer['some:body'];
+		server.solvePath('x')
 		then:
-		dec.scalar == 123;
-		dec.lowers['thing:'].map.important.refer() == 456;
+		exc = thrown(TpacHandlingException)
+		exc.message == String.format(msgs.exc.invalidpath, 'x')
+	}
+	
+	def 'findAll'(){
+		given:
+		TpacDec dec1 = new TpacDec(tag: 'some')
+		TpacDec dec2 = new TpacDec(tag: 'some', name: 'dec2')
+		server << dec1
+		server << dec2
+		List list
 		
-		when:
-		source = '''\
-			#! some thing
-			'''.stripIndent();
-		someServer = new SomeServer();
-		someServer.soak(source);
+		when: 'タグが someで、名前が空文字ではない宣言を取得します'
+		list = server.findAll(/^some:/)
 		then:
-		exc = thrown(TeaServerParseException);
-		exc.cause.message == 'スカラー値が指定されていません。key=some:thing';
+		list.size() == 1
+		list.collect { it.key } == [ 'some:dec2' ]
 		
-		when:
-		source = '''\
-			#! some how 123
-			#> thing
-			'''.stripIndent();
-		someServer = new SomeServer();
-		someServer.soak(source);
+		when: 'タグが someの宣言を取得します'
+		list = server.findAll(/^some|some:.+$/)
 		then:
-		exc = thrown(TeaServerParseException);
-		exc.cause.message == 'importantが指定されていません。key=thing:';
-	}
-	
-	class SomeServer implements TeaServer {
-		TeaMaker maker(String tag){
-			return (tag == 'some')? new SomeMaker() : TeaServer.super.maker(tag);
-		}
-	}
-	
-	class SomeMaker implements TeaMaker {
-		TeaDec newTeaDec(String tag, String name){
-			return new SomeDec();
-		}
+		list.size() == 2
+		list.collect { it.key } == [ 'some', 'some:dec2' ]
 		
-		TeaHandle newTeaHandle(String tag, String name, TeaHandle upper){
-			return (tag == 'thing')? new ThingHandle() : TeaMaker.super.newTeaHandle(tag, name, upper);
-		}
-	}
-	
-	class SomeDec implements TeaDec {
-		@Override
-		void validate(){
-			if (scalar == null) throw new TeaMakerMakeException("スカラー値が指定されていません。key=${key}");
-		}
-	}
-	
-	class ThingHandle implements TeaHandle {
-		@Override
-		void validate(){
-			if (map.important == null) throw new TeaMakerMakeException("importantが指定されていません。key=${key}");
-		}
+		when: 'みつからない場合は空リストを返します'
+		list = server.findAll(/nosuch/)
+		then:
+		list.size() == 0
 	}
 }

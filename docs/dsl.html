@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Noto+Serif+JP:400,700&amp;subset=japanese">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+<style type="text/css">
+<!--
+body {
+	font-family: 'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Hiragino Sans',Meiryo,sans-serif;
+	letter-spacing: 0.05rem;
+	line-height: 2.3rem;
+	text-align: justify;
+	word-wrap: break-word;
+}
+h2 {
+	margin-top: 2rem;
+}
+div.container {
+	margin-bottom: 3rem;
+}
+pre {
+	padding: 0.5rem;
+	line-height: 1.3rem;
+	background-color: oldlace;
+}
+th, td {
+	border: solid 1px black;
+	padding: 0rem 0.5rem;
+}
+th {
+	text-align: center;
+}
+-->
+</style>
+<title> DSLの利用</title>
+</head>
+<body>
+
+<div class="container">
+<div class="row justify-content-center">
+<div class="col-lg-9">
+
+<h1><a href="#dslの利用" id="dslの利用"></a>DSLの利用</h1>
+<ul>
+<li><a href="#概要">概要</a></li>
+<li><a href="#詳細">詳細</a></li>
+<li><a href="#サンプルコード">サンプルコード</a></li>
+</ul>
+<h2><a href="#概要" id="概要"></a>概要</h2>
+<p>　本ライブラリは独自の DSLの利用に役立てることができます。</p>
+<p>　ハンドル、宣言の実装クラスを独自のクラスに置き換えることができます。<br />
+　tpac文書の解析時に、それら独自クラスのインスタンスを作成することができます。</p>
+<h2><a href="#詳細" id="詳細"></a>詳細</h2>
+<p>　ハンドルは TpacHandleクラス、宣言は TpacDecクラスで実装しています。<br />
+　TpacHandleクラス、TpacDecクラスにはフィールドやメソッドがありません。それぞれTeaHandle特性、TeaDec特性を実装しています。<br />
+　独自のクラスに TeaHandle特性、TeaDec特性を実装するだけで、それらは TpacHandleクラス、TpacDecクラスと同等のクラスとなります。</p>
+<p>　tpac文書は TpacServerクラスが保持します。TpacPartyクラスで tpac文書の文字列を解析し、TpacMakerクラスでハンドルや宣言のインスタンスを生成します。<br />
+　こちらも同じように各クラスはほとんど処理がありません。処理は特性のほうにコーディングしています。<br />
+　このため、たとえば TeaMaker特性を実装し、ハンドルや宣言のインスタンスを生成するメソッドをオーバーライドすることで、独自のクラスをハンドルや宣言のインスタンスとして返すことができます。<br />
+　ある tpac文書のすべてのハンドルや宣言を独自クラスに置き換える必要はありません。基本的には TpacHandleクラス、TpacDecクラスを用い、必要な箇所だけ独自クラスに置き換えることができます。</p>
+<table>
+<thead>
+<tr><th> 実装対象 </th><th> 実装クラス  </th><th> 特性       </th></tr>
+</thead>
+<tbody>
+<tr><td> ハンドル </td><td> TpacHandle </td><td> TeaHandle </td></tr>
+<tr><td> 宣言     </td><td> TpacDec    </td><td> TeaDec    </td></tr>
+<tr><td> サーバ   </td><td> TpacServer </td><td> TeaServer </td></tr>
+<tr><td> 解析器   </td><td> TpacParty   </td><td> TeaParty   </td></tr>
+<tr><td> 生成器   </td><td> TpacMaker  </td><td> TeaMaker  </td></tr>
+</tbody>
+</table>
+<p>　これらのクラスは io.github.longfish801.tpacパッケージに、特性は io.github.longfish801.tpac.teaパッケージに格納されています。</p>
+<h2><a href="#サンプルコード" id="サンプルコード"></a>サンプルコード</h2>
+<p>　以下に DSLを実現したサンプルスクリプトを示します（src/test/groovy/SampleDsl.groovy）。<br />
+　タグ名「mail」のハンドルを独自の Mailクラスに置き換えています。</p>
+<pre><code>import io.github.longfish801.tpac.*
+import io.github.longfish801.tpac.tea.*
+
+def attachment2 = new TpacDec(tag: 'attachment', name: '2')
+def scriptHandle = new TpacHandle(tag: 'script')
+scriptHandle.command = [ 'groovy hello.groovy' ]
+scriptHandle.hello = [ &quot;println 'Hello, World!'&quot;, &quot;println 'Hello, tpac!'&quot; ]
+attachment2 &lt;&lt; scriptHandle
+
+def attachment3 = new TpacDec(tag: 'attachment', name: '3')
+def resultHandle = new TpacHandle(tag: 'result')
+resultHandle._ = [ 'Hello, World!', 'Hello, tpac!' ]
+attachment3 &lt;&lt; resultHandle
+
+def mail2 = new Mail('2')
+mail2.from = 'Tom'
+mail2.appendMessage('How about this?')
+mail2.attache(attachment2.path + '/script')
+
+def mail3 = new Mail('3')
+mail3.from = 'Lucy'
+mail3.appendMessage('Oh ...')
+mail3.appendMessage('Great job!')
+mail3.attache(attachment3.path + '/result#_')
+
+String script = '''\
+	#! thread
+	#&gt; mail:1
+	#-from Lucy
+	Hi everyone.
+	Any good scripts?
+	'''.stripIndent()
+
+def server = new MailServer().soak(script)
+def mail1 = server.solvePath('/thread/mail:1')
+assert mail1 instanceof Mail
+mail1.reply(mail2)
+mail1.reply(mail3)
+server &lt;&lt; attachment2
+server &lt;&lt; attachment3
+
+StringWriter writer = new StringWriter()
+server.decs.each { it.value.write(writer) }
+assert writer.toString() == new File('src/test/resources/sample.tpac').text
+
+class MailServer implements TeaServer {
+	@Override
+	TeaMaker newMaker(String tag){
+		if (tag == 'thread') return new MailMaker()
+		return TeaServer.super.newMaker(tag)
+	}
+}
+
+class MailMaker implements TeaMaker {
+	@Override
+	TeaHandle newTeaHandle(String tag, String name, TeaHandle upper){
+		if (tag == 'mail') return new Mail()
+		throw new TpacSemanticException(&quot;Not allowed tag: tag=${tag}&quot;)
+	}
+}
+
+class Mail implements TeaHandle {
+	Mail(String name){
+		this.tag = 'mail'
+		this.name = name
+	}
+	
+	@Override
+	void validate(){
+		if (getAt('from') == null) throw new TpacSemanticException('Key &quot;from&quot; must be specified')
+		if (getAt('_') == null) throw new TpacSemanticException('Message must be specified')
+	}
+	
+	void appendMessage(String line){
+		if (this._ == null) this._ = []
+		this._ &lt;&lt; line
+	}
+	
+	void reply(Mail mail){
+		mail.comments &lt;&lt; &quot;Reply message for ${name}&quot;
+		this &lt;&lt; mail
+	}
+	
+	void attache(String path){
+		setAt('attachment', TpacRefer.newInstance(handle, path))
+	}
+}
+</code></pre>
+<p>　このサンプルコードは build.gradle内の execSampleDslタスクで実行しています。</p>
+
+</div><!-- end of col -->
+</div><!-- end of row -->
+</div><!-- end of container -->
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+</body>
+</html>
