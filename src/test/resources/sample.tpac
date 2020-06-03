@@ -1,0 +1,49 @@
+#! thread
+#>
+
+#> mail:1
+#-from Lucy
+Hi everyone.
+Any good scripts?
+#>
+
+#>> mail:2
+#:Reply message for 1
+#-from Tom
+#-attachment @/attachment:2/script
+How about this?
+#>
+
+#>> mail:3
+#:Reply message for 1
+#-from Lucy
+#-attachment @/attachment:3/result#_
+Oh ...
+Great job!
+#>
+
+#!
+
+#! attachment:2
+#>
+
+#> script
+#-command
+groovy hello.groovy
+#-hello
+println 'Hello, World!'
+println 'Hello, tpac!'
+#>
+
+#!
+
+#! attachment:3
+#>
+
+#> result
+Hello, World!
+Hello, tpac!
+#>
+
+#!
+
