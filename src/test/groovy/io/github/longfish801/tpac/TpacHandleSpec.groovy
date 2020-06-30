@@ -125,8 +125,6 @@ class TpacHandleSpec extends Specification {
 		where:
 		path							|| expect
 		'/some:dec/some:handle'			|| '/some:dec/some:handle'
-		'some:handle'					|| '/some:dec/some:handle'
-		'some:handle/some:lower'		|| '/some:dec/some:handle/some:lower'
 		'..'							|| '/some:dec'
 		'../some:handle'				|| '/some:dec/some:handle'
 		'some:lower'					|| '/some:dec/some:handle/some:lower'
