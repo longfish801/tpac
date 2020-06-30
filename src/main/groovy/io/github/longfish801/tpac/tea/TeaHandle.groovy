@@ -113,6 +113,14 @@ trait TeaHandle implements Cloneable {
 	}
 	
 	/**
+	 * マップからデフォルトキーに対応する値を参照します。
+	 * @return デフォルトキーに対応する値
+	 */
+	def getDflt(){
+		return getAt(cnst.dflt.mapKey)
+	}
+	
+	/**
 	 * このハンドルの絶対パスを返します。
 	 * @return 絶対パス
 	 */

@@ -99,7 +99,7 @@ class TpacPartySpec extends Specification implements GropedResource {
 		decs.size() == 1
 		decs[0].key == 'tpac'
 		decs[0].solvePath('handle').key == 'handle'
-		decs[0].solvePath('handle')._ == [ 'hello tpac!' ]
+		decs[0].solvePath('handle').dflt == [ 'hello tpac!' ]
 		decs[0].solvePath('handle').getAt('key1') == 'hello'
 		decs[0].solvePath('handle').getAt('key2') == [ 'hello2' ]
 		decs[0].solvePath('handle:some2').key == 'handle:some2'
@@ -131,7 +131,7 @@ class TpacPartySpec extends Specification implements GropedResource {
 		decs[0].solvePath('handle').key == 'handle'
 		decs[0].solvePath('handle').comments == [ 'comment' ]
 		decs[0].solvePath('handle').getAt('key1') == 'val1'
-		decs[0].solvePath('handle')._ == [ 'text', '#invalid' ]
+		decs[0].solvePath('handle').dflt == [ 'text', '#invalid' ]
 		decs[0].solvePath('handle').getAt('key2') == [ 'val2' ]
 	}
 	
@@ -243,7 +243,7 @@ class TpacPartySpec extends Specification implements GropedResource {
 		decs = party.parse(source)
 		then:
 		decs[0].key == 'dec'
-		decs[0]._ == [ 'hello' ]
+		decs[0].dflt == [ 'hello' ]
 		
 		when: '宣言／ハンドル開始行からコメントまでの間にテキストが現れたとき'
 		source = '''\
@@ -253,7 +253,7 @@ class TpacPartySpec extends Specification implements GropedResource {
 		decs = party.parse(source)
 		then:
 		decs[0].key == 'dec'
-		decs[0]._ == [ 'hello' ]
+		decs[0].dflt == [ 'hello' ]
 	}
 	
 	def 'branchHandle - exception'(){
@@ -363,7 +363,7 @@ class TpacPartySpec extends Specification implements GropedResource {
 		then:
 		decs[0].key == 'dec'
 		decs[0].getAt('key') == 'hello'
-		decs[0]._ == [ 'hello2' ]
+		decs[0].dflt == [ 'hello2' ]
 		
 		when: '宣言／ハンドルのコメントより後にテキストが現れたとき'
 		source = '''\
@@ -375,7 +375,7 @@ class TpacPartySpec extends Specification implements GropedResource {
 		then:
 		decs[0].key == 'dec'
 		decs[0].getAt('key') == 'hello'
-		decs[0]._ == [ 'hello2' ]
+		decs[0].dflt == [ 'hello2' ]
 	}
 	
 	def 'branchMapScalar - exception'(){
@@ -474,7 +474,7 @@ class TpacPartySpec extends Specification implements GropedResource {
 		decs = party.parse(source)
 		then:
 		decs[0].key == 'dec'
-		decs[0]._ == [ 'hello' ]
+		decs[0].dflt == [ 'hello' ]
 	}
 	
 	def 'branchText - exception'(){
@@ -538,7 +538,7 @@ class TpacPartySpec extends Specification implements GropedResource {
 		decs = party.parse(source)
 		then:
 		decs[0].key == 'dec'
-		decs[0]._ == null
+		decs[0].dflt == null
 		
 		when: 'ハンドル開始行にスカラー値あり'
 		source = '''\
@@ -547,7 +547,7 @@ class TpacPartySpec extends Specification implements GropedResource {
 		decs = party.parse(source)
 		then:
 		decs[0].key == 'dec'
-		decs[0]._ == 'hello'
+		decs[0].dflt == 'hello'
 	}
 	
 	def 'leafDec - exception'(){
@@ -592,7 +592,7 @@ class TpacPartySpec extends Specification implements GropedResource {
 		decs = party.parse(source)
 		then:
 		decs[0].solvePath('handle').key == 'handle'
-		decs[0].solvePath('handle')._ == null
+		decs[0].solvePath('handle').dflt == null
 		
 		when: 'ハンドル開始行にスカラー値あり'
 		source = '''\
@@ -602,7 +602,7 @@ class TpacPartySpec extends Specification implements GropedResource {
 		decs = party.parse(source)
 		then:
 		decs[0].solvePath('handle').key == 'handle'
-		decs[0].solvePath('handle')._ == 'hello'
+		decs[0].solvePath('handle').dflt == 'hello'
 		
 		when: 'ハンドル開始行が省略記法でスカラー値なし'
 		source = '''\
@@ -612,7 +612,7 @@ class TpacPartySpec extends Specification implements GropedResource {
 		decs = party.parse(source)
 		then:
 		decs[0].solvePath('handle').key == 'handle'
-		decs[0].solvePath('handle')._ == null
+		decs[0].solvePath('handle').dflt == null
 		
 		when: 'ハンドル開始行が省略記法でスカラー値あり'
 		source = '''\
@@ -622,7 +622,7 @@ class TpacPartySpec extends Specification implements GropedResource {
 		decs = party.parse(source)
 		then:
 		decs[0].solvePath('handle').key == 'handle'
-		decs[0].solvePath('handle')._ == 'hello'
+		decs[0].solvePath('handle').dflt == 'hello'
 	}
 	
 	def 'leafHandle - exception'(){
@@ -707,7 +707,7 @@ class TpacPartySpec extends Specification implements GropedResource {
 			'''.stripIndent()
 		decs = party.parse(source)
 		then:
-		decs[0]._ == [ 'hello1', 'hello2', 'hello3' ]
+		decs[0].dflt == [ 'hello1', 'hello2', 'hello3' ]
 		
 		when: 'テキストが複数ある場合に行番号がリセットされること'
 		source = '''\

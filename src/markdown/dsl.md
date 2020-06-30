@@ -110,7 +110,7 @@ class Mail implements TeaHandle {
 	}
 	
 	void appendMessage(String line){
-		if (this._ == null) this._ = []
+		if (this.dflt == null) this._ = []
 		this._ << line
 	}
 	

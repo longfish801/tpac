@@ -90,7 +90,7 @@ try {
 def thread = server['thread']
 assert thread.key == 'thread'
 assert thread.lowers['mail:1'].from == 'Lucy'
-assert thread.lowers['mail:1']._ == [ 'Hi everyone.', 'Any good scripts?' ]
+assert thread.lowers['mail:1'].dflt == [ 'Hi everyone.', 'Any good scripts?' ]
 assert thread.lowers['mail:1'].lowers['mail:2'].comments == [ 'Reply message for 1' ]
 def mail2 = thread.solvePath('mail:1/mail:2')
 assert mail2.attachment.refer().hello == [ "println 'Hello, World!'", "println 'Hello, tpac!'" ]
@@ -131,4 +131,7 @@ dependencies {
 ## 改版履歴
 
 0.3.01
-:solvePathメソッドで自ハンドルと一致した場合の分岐は不要なため削除しました。
+: solvePathメソッドで自ハンドルと一致した場合の分岐は不要なため削除しました。
+
+0.3.02
+: TeaHandleにgetDfltメソッドを追加しました。

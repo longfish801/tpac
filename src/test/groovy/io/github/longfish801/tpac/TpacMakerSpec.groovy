@@ -53,7 +53,7 @@ class TpacMakerSpec extends Specification {
 		maker.createDec('dec', 'some', 'hello')
 		then:
 		maker.handle.key == 'dec:some'
-		maker.handle._ == 'hello'
+		maker.handle.dflt == 'hello'
 		maker.keyForText == cnst.dflt.mapKey
 	}
 	
@@ -64,7 +64,7 @@ class TpacMakerSpec extends Specification {
 		then:
 		maker.handle.key == 'handle:some'
 		maker.handle.upper.key == 'dec:some'
-		maker.handle._ == 'bye'
+		maker.handle.dflt == 'bye'
 		maker.keyForText == cnst.dflt.mapKey
 		
 		when: '同じ階層を連続して追加'
@@ -74,7 +74,7 @@ class TpacMakerSpec extends Specification {
 		then:
 		maker.handle.key == 'handle'
 		maker.handle.upper.key == 'dec:some'
-		maker.handle._ == 'hi'
+		maker.handle.dflt == 'hi'
 		maker.keyForText == cnst.dflt.mapKey
 		
 		when: 'ひとつ上の階層を追加'
@@ -85,7 +85,7 @@ class TpacMakerSpec extends Specification {
 		then:
 		maker.handle.key == 'handle:buff'
 		maker.handle.upper.key == 'dec:some'
-		maker.handle._ == 'bye-bye'
+		maker.handle.dflt == 'bye-bye'
 		maker.keyForText == cnst.dflt.mapKey
 	}
 	

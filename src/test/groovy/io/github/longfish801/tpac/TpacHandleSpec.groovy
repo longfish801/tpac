@@ -6,6 +6,7 @@
 package io.github.longfish801.tpac
 
 import groovy.util.logging.Slf4j
+import io.github.longfish801.tpac.TpacConst as cnst
 import io.github.longfish801.tpac.TpacMsg as msgs
 import java.util.regex.Pattern
 import spock.lang.Specification
@@ -91,6 +92,17 @@ class TpacHandleSpec extends Specification {
 		handle['boo'] = 'foo'
 		then:
 		handle['boo'] == 'foo'
+	}
+	
+	def 'getDflt'(){
+		given:
+		TpacHandle handle
+		
+		when:
+		handle = new TpacHandle(tag: 'some', name: 'handle')
+		handle.setAt(cnst.dflt.mapKey, 'foo')
+		then:
+		handle.dflt == 'foo'
 	}
 	
 	def 'getPath'(){
