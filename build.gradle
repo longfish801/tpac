@@ -18,7 +18,7 @@ apply plugin: 'maven-publish'
 
 defaultTasks 'fix'
 group = 'io.github.longfish801'
-version = '0.3.02'
+version = '0.3.03'
 
 repositories {
 	mavenCentral()

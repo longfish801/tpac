@@ -43,7 +43,7 @@ How about this?
 #>> mail:3
 #:Reply message for 1
 #-from Lucy
-#-attachment @/attachment:3/result#_
+#-attachment @/attachment:3/result#
 Oh ...
 Great job!
 #>

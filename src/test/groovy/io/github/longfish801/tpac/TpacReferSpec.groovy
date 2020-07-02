@@ -6,6 +6,7 @@
 package io.github.longfish801.tpac
 
 import groovy.util.logging.Slf4j
+import io.github.longfish801.tpac.TpacConst as cnst
 import io.github.longfish801.tpac.TpacMsg as msgs
 import spock.lang.Specification
 import spock.lang.Shared
@@ -47,22 +48,11 @@ class TpacReferSpec extends Specification {
 		refer.anchor == 'happend'
 		
 		when: 'アンカー有でデフォルトキーの場合'
-		refer = TpacRefer.newInstance(dec, 'some:thing#_')
+		refer = TpacRefer.newInstance(dec, 'some:thing#')
 		then:
 		refer.handle == dec
 		refer.path == 'some:thing'
-		refer.anchor == '_'
-	}
-	
-	def 'newInstance - exception'(){
-		given:
-		TpacHandlingException exc
-		
-		when:
-		TpacRefer.newInstance(dec, 'some:thing#')
-		then:
-		exc = thrown(TpacHandlingException)
-		exc.message == String.format(msgs.exc.noEmptyAnchor, 'some:thing#')
+		refer.anchor == cnst.dflt.mapKey
 	}
 	
 	def 'constructor'(){
@@ -91,9 +81,9 @@ class TpacReferSpec extends Specification {
 		refer.toString() == 'some:thing#happend'
 		
 		when: 'アンカー有でデフォルトキーの場合'
-		refer = TpacRefer.newInstance(dec, 'some:thing#_')
+		refer = TpacRefer.newInstance(dec, 'some:thing#')
 		then:
-		refer.toString() == 'some:thing#_'
+		refer.toString() == 'some:thing#'
 	}
 	
 	def 'refer'(){
@@ -111,7 +101,7 @@ class TpacReferSpec extends Specification {
 		refer.refer() == 'OK?'
 		
 		when: 'アンカー有でデフォルトキーの場合'
-		refer = TpacRefer.newInstance(dec, 'some:thing#_')
+		refer = TpacRefer.newInstance(dec, 'some:thing#')
 		then:
 		refer.refer() == 'OK!'
 	}

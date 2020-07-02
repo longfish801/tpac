@@ -44,7 +44,7 @@ How about this?
 #>> mail:3
 #:Reply message for 1
 #-from Lucy
-#-attachment @/attachment:3/result#_
+#-attachment @/attachment:3/result#
 Oh ...
 Great job!
 #>
@@ -135,3 +135,6 @@ dependencies {
 
 0.3.02
 : TeaHandleにgetDfltメソッドを追加しました。
+
+0.3.03
+: パスのアンカーを省略したときはデフォルトキーとみなすよう修正しました。

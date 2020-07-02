@@ -14,6 +14,5 @@ exc {
 	duplicateIdKey = 'Duplicate identification key, Cannnot add a declaration. key=%s'
 	invalidHandle = 'Invalid handle beginning line, check syntax.'
 	invalidIdKey = 'Invalid identification key, check syntax.'
-	noEmptyAnchor = 'No empty character can be specified for the anchor. path=%s'
 	parseError = 'Failed to parse tpac document.'
 }
