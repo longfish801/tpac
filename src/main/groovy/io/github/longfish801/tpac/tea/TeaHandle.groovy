@@ -38,7 +38,7 @@ trait TeaHandle implements Cloneable {
 	/**
 	 * 識別キーを返します。<br/>
 	 * 識別キーはタグ名と名前を半角コロンで連結した文字列です。<br/>
-	 * 名前が空文字の場合はタグ名のみを返します。
+	 * 名前を省略した場合はタグ名のみを返します。
 	 * @return 識別キー
 	 */
 	String getKey(){

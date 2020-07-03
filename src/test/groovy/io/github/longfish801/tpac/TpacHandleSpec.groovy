@@ -28,8 +28,8 @@ class TpacHandleSpec extends Specification {
 		then:
 		handle.key == 'some:handle'
 		
-		when: '名前が空文字の場合はタグ名のみを返します'
-		handle = new TpacHandle(tag: 'some', name: '')
+		when: '名前を省略した場合はタグ名のみを返します'
+		handle = new TpacHandle(tag: 'some')
 		then:
 		handle.key == 'some'
 	}

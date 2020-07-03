@@ -55,6 +55,13 @@ class TpacMakerSpec extends Specification {
 		maker.handle.key == 'dec:some'
 		maker.handle.dflt == 'hello'
 		maker.keyForText == cnst.dflt.mapKey
+		
+		when:
+		maker.createDec('dec', cnst.omit.handleName, null)
+		then:
+		maker.handle.key == 'dec'
+		maker.handle.dflt == null
+		maker.keyForText == cnst.dflt.mapKey
 	}
 	
 	def 'createHandle'(){
@@ -86,6 +93,15 @@ class TpacMakerSpec extends Specification {
 		maker.handle.key == 'handle:buff'
 		maker.handle.upper.key == 'dec:some'
 		maker.handle.dflt == 'bye-bye'
+		maker.keyForText == cnst.dflt.mapKey
+		
+		when: '名前を省略した場合'
+		maker.createDec('dec', 'some', 'hello')
+		maker.createHandle('handle', cnst.omit.handleName, 1, null)
+		then:
+		maker.handle.key == 'handle'
+		maker.handle.upper.key == 'dec:some'
+		maker.handle.dflt == null
 		maker.keyForText == cnst.dflt.mapKey
 	}
 	

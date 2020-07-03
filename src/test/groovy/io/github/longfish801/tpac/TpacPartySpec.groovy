@@ -7,6 +7,7 @@ package io.github.longfish801.tpac
 
 import groovy.util.logging.Slf4j
 import io.github.longfish801.gonfig.GropedResource
+import io.github.longfish801.tpac.TpacConst as cnst
 import io.github.longfish801.tpac.TpacMsg as msgs
 import io.github.longfish801.tpac.tea.TeaParty
 import spock.lang.Specification
@@ -748,7 +749,7 @@ class TpacPartySpec extends Specification implements GropedResource {
 		decs = party.parse(source)
 		then:
 		decs[0].tag == 'tag'
-		decs[0].name == ''
+		decs[0].name == cnst.dflt.handleName
 	}
 	
 	def 'splitKey - exception'(){

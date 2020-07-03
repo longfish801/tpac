@@ -35,7 +35,7 @@ class TpacRefer {
 		} else {
 			refer.path = fullpath.substring(0, anchorIdx)
 			refer.anchor = fullpath.substring(anchorIdx + cnst.scalar.anchor.length())
-			if (refer.anchor.empty) refer.anchor = cnst.dflt.mapKey
+			if (refer.anchor == cnst.omit.mapKey) refer.anchor = cnst.dflt.mapKey
 		}
 		return refer
 	}
