@@ -114,7 +114,7 @@ trait TeaServer {
 		if (cnst.path.decs.every { !(path ==~ it) }){
 			throw new TpacHandlingException(String.format(msgs.exc.invalidpath, path))
 		}
-		Matcher matcher = Matcher.getLastMatcher()
+		Matcher matcher = Matcher.lastMatcher
 		String deckey = matcher.group(1)
 		String other = (matcher.groupCount() >= 2)? matcher.group(2) : null
 		return (other == null)? decs[deckey] : decs[deckey]?.solvePath(other)

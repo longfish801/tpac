@@ -26,16 +26,17 @@ class TpacRefer {
 	 * インスタンスを生成します。
 	 * @param handle ハンドル
 	 * @param fullpath アンカーを含みうるパス
-	 * @exception TpacHandlingException アンカーに空文字は指定できません。
 	 */
 	static TpacRefer newInstance(TeaHandle handle, String fullpath){
 		TpacRefer refer = new TpacRefer(handle)
 		int anchorIdx = fullpath.indexOf(cnst.scalar.anchor)
-		if (anchorIdx + cnst.scalar.anchor.length() == fullpath.length()){
-			throw new TpacHandlingException(String.format(msgs.exc.noEmptyAnchor, fullpath))
+		if (anchorIdx < 0){
+			refer.path = fullpath
+		} else {
+			refer.path = fullpath.substring(0, anchorIdx)
+			refer.anchor = fullpath.substring(anchorIdx + cnst.scalar.anchor.length())
+			if (refer.anchor == cnst.omit.mapKey) refer.anchor = cnst.dflt.mapKey
 		}
-		refer.path = (anchorIdx < 0)? fullpath : fullpath.substring(0, anchorIdx)
-		if (anchorIdx >= 0) refer.anchor = fullpath.substring(anchorIdx + cnst.scalar.anchor.length())
 		return refer
 	}
 	
@@ -53,7 +54,7 @@ class TpacRefer {
 	 */
 	@Override
 	String toString(){
-		return (anchor == null)? path : "${path}${cnst.path.anchor}${anchor}"
+		return (anchor == null)? path : "${path}${cnst.path.anchor}${(anchor == cnst.dflt.mapKey)? '' : anchor}"
 	}
 	
 	/**

@@ -38,7 +38,7 @@ trait TeaHandle implements Cloneable {
 	/**
 	 * 識別キーを返します。<br/>
 	 * 識別キーはタグ名と名前を半角コロンで連結した文字列です。<br/>
-	 * 名前が空文字の場合はタグ名のみを返します。
+	 * 名前を省略した場合はタグ名のみを返します。
 	 * @return 識別キー
 	 */
 	String getKey(){
@@ -113,6 +113,14 @@ trait TeaHandle implements Cloneable {
 	}
 	
 	/**
+	 * マップからデフォルトキーに対応する値を参照します。
+	 * @return デフォルトキーに対応する値
+	 */
+	def getDflt(){
+		return getAt(cnst.dflt.mapKey)
+	}
+	
+	/**
 	 * このハンドルの絶対パスを返します。
 	 * @return 絶対パス
 	 */
@@ -127,9 +135,6 @@ trait TeaHandle implements Cloneable {
 	 * このとき、統語的にありえないパスの場合は例外を投げます。<br/>
 	 * 先頭の識別キーに応じて以下のとおり処理します。</p>
 	 * <dl>
-	 * <dt>先頭の識別キーが自ハンドルの識別キーと一致する場合</dt>
-	 * 	<dd>残りのパスがなければ、自ハンドルを返します。</dd>
-	 * 	<dd>残りのパスがあれば、それを新たなパスとして再帰的にくりかえします。</dd>
 	 * <dt>先頭の識別キーが上位ハンドルの識別キーと一致する場合</dt>
 	 * 	<dd>残りのパスがなければ上位ハンドルを返します。</dd>
 	 * 	<dd>残りのパスがあれば、それを新たなパスとして上位ハンドルに依頼します。</dd>
@@ -145,22 +150,18 @@ trait TeaHandle implements Cloneable {
 	TeaHandle solvePath(String path){
 		// 絶対パスの場合は宣言に解決を依頼します
 		if (path.startsWith(cnst.path.level)) return dec.solvePath(path)
-		
 		// パス区切り文字で分割した先頭の要素を解決します
 		if (cnst.path.handles.every { !(path ==~ it) }){
 			throw new TpacHandlingException(String.format(msgs.exc.invalidpath, path))
 		}
-		Matcher matcher = Matcher.getLastMatcher()
+		Matcher matcher = Matcher.lastMatcher
 		String firstPath = matcher.group(1)
 		String otherPath = (matcher.groupCount() >= 2)? matcher.group(2) : ''
-		switch (firstPath){
-			case key: // 自ハンドルの場合
-				return (otherPath.empty)? this : solvePath(otherPath)
-			case cnst.path.upper: // 上位のパスの場合
-				return (otherPath.empty)? upper : upper.solvePath(otherPath)
-			default: // 下位ハンドルの場合
-				return (otherPath.empty)? lowers[firstPath] : lowers[firstPath]?.solvePath(otherPath)
+		if (firstPath == cnst.path.upper){	// 上位のパスの場合
+			return (otherPath.empty)? upper : upper.solvePath(otherPath)
 		}
+		// 下位ハンドルの場合
+		return (otherPath.empty)? lowers[firstPath] : lowers[firstPath]?.solvePath(otherPath)
 	}
 	
 	/**

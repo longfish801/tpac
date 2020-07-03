@@ -6,6 +6,7 @@
 package io.github.longfish801.tpac
 
 import groovy.util.logging.Slf4j
+import io.github.longfish801.tpac.TpacConst as cnst
 import io.github.longfish801.tpac.TpacMsg as msgs
 import java.util.regex.Pattern
 import spock.lang.Specification
@@ -27,8 +28,8 @@ class TpacHandleSpec extends Specification {
 		then:
 		handle.key == 'some:handle'
 		
-		when: '名前が空文字の場合はタグ名のみを返します'
-		handle = new TpacHandle(tag: 'some', name: '')
+		when: '名前を省略した場合はタグ名のみを返します'
+		handle = new TpacHandle(tag: 'some')
 		then:
 		handle.key == 'some'
 	}
@@ -93,6 +94,17 @@ class TpacHandleSpec extends Specification {
 		handle['boo'] == 'foo'
 	}
 	
+	def 'getDflt'(){
+		given:
+		TpacHandle handle
+		
+		when:
+		handle = new TpacHandle(tag: 'some', name: 'handle')
+		handle.setAt(cnst.dflt.mapKey, 'foo')
+		then:
+		handle.dflt == 'foo'
+	}
+	
 	def 'getPath'(){
 		given:
 		TpacDec dec
@@ -125,8 +137,6 @@ class TpacHandleSpec extends Specification {
 		where:
 		path							|| expect
 		'/some:dec/some:handle'			|| '/some:dec/some:handle'
-		'some:handle'					|| '/some:dec/some:handle'
-		'some:handle/some:lower'		|| '/some:dec/some:handle/some:lower'
 		'..'							|| '/some:dec'
 		'../some:handle'				|| '/some:dec/some:handle'
 		'some:lower'					|| '/some:dec/some:handle/some:lower'

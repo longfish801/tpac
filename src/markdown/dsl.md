@@ -59,7 +59,7 @@ def mail3 = new Mail('3')
 mail3.from = 'Lucy'
 mail3.appendMessage('Oh ...')
 mail3.appendMessage('Great job!')
-mail3.attache(attachment3.path + '/result#_')
+mail3.attache(attachment3.path + '/result#')
 
 String script = '''\
 	#! thread
@@ -110,7 +110,7 @@ class Mail implements TeaHandle {
 	}
 	
 	void appendMessage(String line){
-		if (this._ == null) this._ = []
+		if (this.dflt == null) this._ = []
 		this._ << line
 	}
 	

@@ -325,7 +325,7 @@ trait TeaParty {
 		if (cnst.line.dec.every { !(line ==~ it) }){
 			throw new TpacSyntaxException(msgs.exc.invalidDec)
 		}
-		Matcher matcher = Matcher.getLastMatcher()
+		Matcher matcher = Matcher.lastMatcher
 		String key = matcher.group(1)
 		String scalar = (matcher.groupCount() >= 2)? matcher.group(2) : null
 		// 識別キーが他の宣言と重複しないか確認します
@@ -348,7 +348,7 @@ trait TeaParty {
 		if (cnst.line.handle.every { !(line ==~ it) }){
 			throw new TpacSyntaxException(msgs.exc.invalidHandle)
 		}
-		Matcher matcher = Matcher.getLastMatcher()
+		Matcher matcher = Matcher.lastMatcher
 		String levelStr = matcher.group(1)
 		String key = matcher.group(2)
 		String scalar = (matcher.groupCount() >= 3)? matcher.group(3) : null
@@ -373,7 +373,7 @@ trait TeaParty {
 	 */
 	private void leafMapScalar(String line){
 		line ==~ cnst.line.mapScalar
-		Matcher matcher = Matcher.getLastMatcher()
+		Matcher matcher = Matcher.lastMatcher
 		String key = matcher.group(1)
 		String scalar = matcher.group(2)
 		makers.last().createMap(key, scalar)
@@ -385,7 +385,7 @@ trait TeaParty {
 	 */
 	private void leafMapText(String line){
 		line ==~ cnst.line.mapText
-		String key = Matcher.getLastMatcher().group(1)
+		String key = Matcher.lastMatcher.group(1)
 		makers.last().createMap(key, null)
 	}
 	
@@ -412,7 +412,7 @@ trait TeaParty {
 		if (cnst.line.key.every { !(key ==~ it) }){
 			throw new TpacSyntaxException(msgs.exc.invalidIdKey)
 		}
-		Matcher matcher = Matcher.getLastMatcher()
+		Matcher matcher = Matcher.lastMatcher
 		String tag = matcher.group(1)
 		String name = (matcher.groupCount() >= 2)? matcher.group(2) : cnst.dflt.handleName
 		return [ tag, name ]

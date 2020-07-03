@@ -51,6 +51,7 @@ th {
 <li><a href="#githubリポジトリ">GitHubリポジトリ</a></li>
 <li><a href="#ドキュメント">ドキュメント</a></li>
 <li><a href="#mavenリポジトリ">Mavenリポジトリ</a></li>
+<li><a href="#改版履歴">改版履歴</a></li>
 </ul>
 <h2><a href="#概要" id="概要"></a>概要</h2>
 <p>　複数行のテキストを含む文書を操作します。<br />
@@ -87,7 +88,7 @@ How about this?
 #&gt;&gt; mail:3
 #:Reply message for 1
 #-from Lucy
-#-attachment @/attachment:3/result#_
+#-attachment @/attachment:3/result#
 Oh ...
 Great job!
 #&gt;
@@ -130,7 +131,7 @@ try {
 def thread = server['thread']
 assert thread.key == 'thread'
 assert thread.lowers['mail:1'].from == 'Lucy'
-assert thread.lowers['mail:1']._ == [ 'Hi everyone.', 'Any good scripts?' ]
+assert thread.lowers['mail:1'].dflt == [ 'Hi everyone.', 'Any good scripts?' ]
 assert thread.lowers['mail:1'].lowers['mail:2'].comments == [ 'Reply message for 1' ]
 def mail2 = thread.solvePath('mail:1/mail:2')
 assert mail2.attachment.refer().hello == [ &quot;println 'Hello, World!'&quot;, &quot;println 'Hello, tpac!'&quot; ]
@@ -162,6 +163,17 @@ dependencies {
 	implementation group: 'io.github.longfish801', name: 'tpac', version: '0.3.00'
 }
 </code></pre>
+<h2><a href="#改版履歴" id="改版履歴"></a>改版履歴</h2>
+<dl>
+<dt>0.3.01</dt>
+<dd>solvePathメソッドで自ハンドルと一致した場合の分岐は不要なため削除しました。</dd>
+<dt>0.3.02</dt>
+<dd>TeaHandleにgetDfltメソッドを追加しました。</dd>
+<dt>0.3.03</dt>
+<dd>パスのアンカーを省略したときはデフォルトキーとみなすよう修正しました。</dd>
+<dt>0.3.04</dt>
+<dd>ハンドルのデフォルトキーの実体を空文字から半角アンダーバーに変更しました。</dd>
+</dl>
 
 </div><!-- end of col -->
 </div><!-- end of row -->

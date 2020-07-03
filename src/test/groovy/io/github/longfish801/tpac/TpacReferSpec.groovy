@@ -6,6 +6,7 @@
 package io.github.longfish801.tpac
 
 import groovy.util.logging.Slf4j
+import io.github.longfish801.tpac.TpacConst as cnst
 import io.github.longfish801.tpac.TpacMsg as msgs
 import spock.lang.Specification
 import spock.lang.Shared
@@ -17,14 +18,15 @@ import spock.lang.Shared
  */
 @Slf4j('LOG')
 class TpacReferSpec extends Specification {
-	@Shared TpacDec handle
+	@Shared TpacDec dec
+	@Shared TpacHandle handle
 	
 	def setup(){
-		handle = new TpacDec()
-		handle.tag = 'some'
-		handle.name = 'thing'
+		dec = new TpacDec(tag: 'dec')
+		handle = new TpacHandle(tag: 'some', name: 'thing')
 		handle.happend = 'OK?'
 		handle._ = 'OK!'
+		dec << handle
 	}
 	
 	def 'newInstance'(){
@@ -32,36 +34,25 @@ class TpacReferSpec extends Specification {
 		TpacRefer refer
 		
 		when:
-		refer = TpacRefer.newInstance(handle, 'some:thing')
+		refer = TpacRefer.newInstance(dec, 'some:thing')
 		then:
-		refer.handle == handle
+		refer.handle == dec
 		refer.path == 'some:thing'
 		refer.anchor == null
 		
 		when: 'アンカー有の場合'
-		refer = TpacRefer.newInstance(handle, 'some:thing#happend')
+		refer = TpacRefer.newInstance(dec, 'some:thing#happend')
 		then:
-		refer.handle == handle
+		refer.handle == dec
 		refer.path == 'some:thing'
 		refer.anchor == 'happend'
 		
 		when: 'アンカー有でデフォルトキーの場合'
-		refer = TpacRefer.newInstance(handle, 'some:thing#_')
+		refer = TpacRefer.newInstance(dec, 'some:thing#')
 		then:
-		refer.handle == handle
+		refer.handle == dec
 		refer.path == 'some:thing'
-		refer.anchor == '_'
-	}
-	
-	def 'newInstance - exception'(){
-		given:
-		TpacHandlingException exc
-		
-		when:
-		TpacRefer.newInstance(handle, 'some:thing#')
-		then:
-		exc = thrown(TpacHandlingException)
-		exc.message == String.format(msgs.exc.noEmptyAnchor, 'some:thing#')
+		refer.anchor == cnst.dflt.mapKey
 	}
 	
 	def 'constructor'(){
@@ -69,10 +60,10 @@ class TpacReferSpec extends Specification {
 		TpacRefer refer
 		
 		when:
-		refer = new TpacRefer(handle)
+		refer = new TpacRefer(dec)
 		then:
 		refer instanceof TpacRefer
-		refer.handle == handle
+		refer.handle == dec
 	}
 	
 	def 'toString'(){
@@ -80,19 +71,19 @@ class TpacReferSpec extends Specification {
 		TpacRefer refer
 		
 		when:
-		refer = TpacRefer.newInstance(handle, 'some:thing')
+		refer = TpacRefer.newInstance(dec, 'some:thing')
 		then:
 		refer.toString() == 'some:thing'
 		
 		when: 'アンカー有の場合'
-		refer = TpacRefer.newInstance(handle, 'some:thing#happend')
+		refer = TpacRefer.newInstance(dec, 'some:thing#happend')
 		then:
 		refer.toString() == 'some:thing#happend'
 		
 		when: 'アンカー有でデフォルトキーの場合'
-		refer = TpacRefer.newInstance(handle, 'some:thing#_')
+		refer = TpacRefer.newInstance(dec, 'some:thing#')
 		then:
-		refer.toString() == 'some:thing#_'
+		refer.toString() == 'some:thing#'
 	}
 	
 	def 'refer'(){
@@ -100,17 +91,17 @@ class TpacReferSpec extends Specification {
 		TpacRefer refer
 		
 		when:
-		refer = TpacRefer.newInstance(handle, 'some:thing')
+		refer = TpacRefer.newInstance(dec, 'some:thing')
 		then:
 		refer.refer() == handle
 		
 		when: 'アンカー有の場合'
-		refer = TpacRefer.newInstance(handle, 'some:thing#happend')
+		refer = TpacRefer.newInstance(dec, 'some:thing#happend')
 		then:
 		refer.refer() == 'OK?'
 		
 		when: 'アンカー有でデフォルトキーの場合'
-		refer = TpacRefer.newInstance(handle, 'some:thing#_')
+		refer = TpacRefer.newInstance(dec, 'some:thing#')
 		then:
 		refer.refer() == 'OK!'
 	}

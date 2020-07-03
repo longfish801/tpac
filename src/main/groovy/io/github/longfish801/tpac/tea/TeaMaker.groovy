@@ -75,7 +75,7 @@ trait TeaMaker {
 	void createDec(String tag, String name, String scalar){
 		handle = this.newTeaDec(tag, name)
 		handle.tag = tag
-		handle.name = name
+		if (name != cnst.omit.handleName) handle.name = name
 		createMap(cnst.dflt.mapKey, scalar)
 	}
 	
@@ -116,7 +116,7 @@ trait TeaMaker {
 		// ハンドルを作成する
 		handle = this.newTeaHandle(tag, name, upper)
 		handle.tag = tag
-		handle.name = name
+		if (name != cnst.omit.handleName) handle.name = name
 		upper << handle
 		createMap(cnst.dflt.mapKey, scalar)
 	}

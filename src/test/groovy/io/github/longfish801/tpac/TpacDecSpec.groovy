@@ -61,7 +61,7 @@ class TpacDecSpec extends Specification {
 		
 		where:
 		path			|| expect
-		'dec'			|| '/dec'
+		'handle'		|| '/dec/handle'
 		'/dec/handle'	|| '/dec/handle'
 	}
 	
