@@ -34,6 +34,21 @@ class TpacHandleSpec extends Specification {
 		handle.key == 'some'
 	}
 	
+	def 'getKeyNatural'(){
+		given:
+		TpacHandle handle
+		
+		when:
+		handle = new TpacHandle(tag: 'some', name: 'handle')
+		then:
+		handle.keyNatural == 'some:handle'
+		
+		when: '名前を省略した場合、名前として半角アンダーバーを用います'
+		handle = new TpacHandle(tag: 'some')
+		then:
+		handle.keyNatural == 'some:_'
+	}
+	
 	def 'getDec'(){
 		given:
 		TpacDec dec
@@ -68,7 +83,7 @@ class TpacHandleSpec extends Specification {
 		when:
 		handle << lower
 		then:
-		handle.lowers['lower'] == lower
+		handle.lowers['lower:_'] == lower
 		lower.upper == handle
 	}
 	
@@ -116,6 +131,13 @@ class TpacHandleSpec extends Specification {
 		dec << handle
 		then:
 		handle.path == '/some:dec/some:handle'
+		
+		when:
+		dec = new TpacDec(tag: 'some')
+		handle = new TpacHandle(tag: 'some')
+		dec << handle
+		then:
+		handle.path == '/some/some'
 	}
 	
 	@Unroll
@@ -125,21 +147,25 @@ class TpacHandleSpec extends Specification {
 		TpacDec dec = new TpacDec(tag: 'some', name: 'dec')
 		TpacHandle handle = new TpacHandle(tag: 'some', name: 'handle')
 		TpacHandle lower = new TpacHandle(tag: 'some', name: 'lower')
+		TpacHandle lower2 = new TpacHandle(tag: 'some')
 		TpacHandle lowerlower = new TpacHandle(tag: 'some', name: 'lowerlower')
 		server << dec
 		dec << handle
 		handle << lower
+		handle << lower2
 		lower << lowerlower
 		
 		expect:
 		handle.solvePath(path).path == expect
 		
 		where:
-		path							|| expect
-		'/some:dec/some:handle'			|| '/some:dec/some:handle'
+		path						|| expect
+		'/some:dec/some:handle'		|| '/some:dec/some:handle'
 		'..'							|| '/some:dec'
 		'../some:handle'				|| '/some:dec/some:handle'
 		'some:lower'					|| '/some:dec/some:handle/some:lower'
+		'some'						|| '/some:dec/some:handle/some'
+		'some:_'						|| '/some:dec/some:handle/some'
 		'some:lower/some:lowerlower'	|| '/some:dec/some:handle/some:lower/some:lowerlower'
 	}
 	
@@ -164,14 +190,14 @@ class TpacHandleSpec extends Specification {
 		handle << lower2
 		List list
 		
-		when: 'タグが someで、名前が空文字ではない下位ハンドルを取得します'
-		list = handle.findAll(/^some:/)
+		when: 'タグが someで、名前が省略されていない下位ハンドルを取得します'
+		list = handle.findAll(/^some:[^_]+$/)
 		then:
 		list.size() == 1
 		list.collect { it.key } == [ 'some:lower2' ]
 		
 		when: 'タグが someの下位ハンドルを取得します'
-		list = handle.findAll(/^some|some:.+$/)
+		list = handle.findAll(/^some:.+$/)
 		then:
 		list.size() == 2
 		list.collect { it.key } == [ 'some', 'some:lower2' ]
@@ -361,7 +387,7 @@ class TpacHandleSpec extends Specification {
 		cloned = handle.clone()
 		then:
 		cloned.upper.key == dec.key
-		cloned.lowers['lower'].key == lower.key
+		cloned.lowers['lower:_'].key == lower.key
 		cloned.comments[0] == 'Comment'
 		cloned.KEY == 'VAL'
 	}
