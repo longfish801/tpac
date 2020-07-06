@@ -47,6 +47,16 @@ trait TeaHandle implements Cloneable {
 	}
 	
 	/**
+	 * 未加工の識別キーを返します。<br/>
+	 * 識別キーはタグ名と名前を半角コロンで連結した文字列です。<br/>
+	 * 名前を省略した場合、名前として半角アンダーバーを用います。
+	 * @return 未加工の識別キー
+	 */
+	String getKeyNatural(){
+		return "${tag}${cnst.path.keyDiv}${name}" as String
+	}
+	
+	/**
 	 * このハンドルの階層を返します。
 	 * @return 階層
 	 */
@@ -63,12 +73,13 @@ trait TeaHandle implements Cloneable {
 	}
 	
 	/**
-	 * 下位ハンドルを追加します。
+	 * 下位ハンドルを追加します。<br/>
+	 * メンバ変数lowersに、未加工の識別キーをキーとして格納します。
 	 * @param lower 下位ハンドル
 	 * @return 自インスタンス
 	 */
 	TeaHandle leftShift(TeaHandle lower){
-		lowers[lower.key] = lower
+		lowers[lower.keyNatural] = lower
 		lower.upper = this
 		return this
 	}
@@ -139,8 +150,9 @@ trait TeaHandle implements Cloneable {
 	 * 	<dd>残りのパスがなければ上位ハンドルを返します。</dd>
 	 * 	<dd>残りのパスがあれば、それを新たなパスとして上位ハンドルに依頼します。</dd>
 	 * <dt>上記以外の場合</dt>
-	 * 	<dd>残りのパスがなければ、識別キーが一致する下位ハンドルを返します。</dd>
-	 * 	<dd>残りのパスがあれば、それを新たなパスとして識別キーが一致する下位ハンドルに依頼します。</dd>
+	 * 	<dd>先頭の識別キーにタグと名前の区切りがなければ、未加工の識別キーに修正します。</dd>
+	 * 	<dd>残りのパスがなければ、未加工の識別キーが一致する下位ハンドルを返します。</dd>
+	 * 	<dd>残りのパスがあれば、それを新たなパスとして未加工の識別キーが一致する下位ハンドルに依頼します。</dd>
 	 * </dl>
 	 * <p>上記で該当するハンドルがなければ nullを返します。
 	 * @param path パス
@@ -158,21 +170,22 @@ trait TeaHandle implements Cloneable {
 		String firstPath = matcher.group(1)
 		String otherPath = (matcher.groupCount() >= 2)? matcher.group(2) : ''
 		if (firstPath == cnst.path.upper){	// 上位のパスの場合
-			return (otherPath.empty)? upper : upper.solvePath(otherPath)
+			return (otherPath.empty)? upper : upper?.solvePath(otherPath)
 		}
 		// 下位ハンドルの場合
+		if (firstPath.indexOf(cnst.path.keyDiv) < 0) firstPath = "${firstPath}${cnst.path.keyDiv}${cnst.dflt.handleName}"
 		return (otherPath.empty)? lowers[firstPath] : lowers[firstPath]?.solvePath(otherPath)
 	}
 	
 	/**
-	 * 識別キーの一部が正規表現とマッチする下位ハンドルのリストを取得します。<br/>
+	 * 未加工の識別キーの一部が正規表現とマッチする下位ハンドルのリストを取得します。<br/>
 	 * 直下の下位ハンドルのみ探します。<br/>
 	 * 再帰的にさらに下位まで探すわけではないことに注意してください。
 	 * @param regex 正規表現
-	 * @return 識別キーが正規表現と一致する下位ハンドルのリスト（みつからない場合は空リスト）
+	 * @return 未加工の識別キーが正規表現と一致する下位ハンドルのリスト（みつからない場合は空リスト）
 	 */
 	List<TeaHandle> findAll(String regex){
-		return lowers.values().findAll { it.key =~ regex }
+		return lowers.values().findAll { it.keyNatural =~ regex }
 	}
 	
 	/**
