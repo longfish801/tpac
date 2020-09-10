@@ -16,3 +16,9 @@ exc {
 	invalidIdKey = 'Invalid identification key, check syntax.'
 	parseError = 'Failed to parse tpac document.'
 }
+
+// 妥当性検証エラーメッセージ
+validate {
+	unspecifiedValue = 'No key is specified. It is required. key=%s'
+	invalidType = 'Invalid type of key value, check syntax. key=%s type=%s'
+}

@@ -5,11 +5,12 @@
  */
 package io.github.longfish801.tpac.tea
 
+import io.github.longfish801.tpac.TpacConst as cnst
 import io.github.longfish801.tpac.TpacEval
 import io.github.longfish801.tpac.TpacHandlingException
-import io.github.longfish801.tpac.TpacRefer
-import io.github.longfish801.tpac.TpacConst as cnst
 import io.github.longfish801.tpac.TpacMsg as msgs
+import io.github.longfish801.tpac.TpacRefer
+import io.github.longfish801.tpac.TpacSemanticException
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import org.apache.commons.text.StringEscapeUtils
@@ -18,7 +19,7 @@ import org.apache.commons.text.StringEscapeUtils
  * ハンドルの特性です。<br/>
  * インスタンス生成後はタグ、上位ハンドルを設定してください。<br/>
  * 一部のメソッドで java.lang.NullpointerExceptionが発生する恐れがあります。
- * @version 0.3.00 2020/05/23
+ * @version 0.3.06 2020/09/10
  * @author io.github.longfish801
  */
 trait TeaHandle implements Cloneable {
@@ -189,9 +190,50 @@ trait TeaHandle implements Cloneable {
 	}
 	
 	/**
+	 * キーの妥当性を検証します。<br/>
+	 * キーの条件として以下のマップを指定してください。</p>
+	 * <dl>
+	 * <dt>キー</dt>
+	 *   <dd>マップのキー</dd>
+	 * <dt>値</dt>
+	 *   <dd>キーの値が満たすべき条件を定義したマップ
+	 *      <dl>
+	 *      <dt>必須チェックをしたい場合はキー「required」にtrueを指定してください。</dt>
+	 *        <dd>キーに値が指定されていなければ例外を投げます。</dd>
+	 *      <dt>デフォルト値を指定したい場合はキー「dflt」にデフォルト値を指定してください。</dt>
+	 *        <dd>キーに値が指定されていなければデフォルト値を格納します。</dd>
+	 *      <dt>クラスのチェックをしたい場合はキー「types」には設定可能な値のクラスをリストで指定してください。</dt>
+	 *        <dd>値がリストにないクラスであれば例外を投げます。</dd>
+	 *      </dl>
+	 *   </dd>
+	 * </dl>
+	 * <p>上記で例外とは {@link io.github.longfish801.tpac.TpacSemanticException}のことです。
+	 * @param conds キーの条件
+	 */
+	void validateKeys(Map conds){
+		conds.each { String condKey, Map condMap ->
+			if (!map.containsKey(condKey)){
+				// 必須項目の値が指定されていない場合は例外を投げます
+				if (condMap.required == true){
+					throw new TpacSemanticException(String.format(msgs.validate.unspecifiedValue, condKey))
+				}
+				// デフォルト値を格納します
+				if (condMap.dflt != null) map.put(condKey, condMap.dflt)
+			} else {
+				// 指定可能なクラスでなければ例外を投げます
+				if (condMap.types != null){
+					if (condMap.types.every { !it.isInstance(map.get(condKey)) }){
+						throw new TpacSemanticException(String.format(msgs.validate.invalidType, condKey, map.get(condKey).class.name))
+					}
+				}
+			}
+		}
+	}
+	
+	/**
 	 * このハンドルの妥当性を検証します。<br/>
 	 * このメソッドは {@link TeaServer#soak(def)}からハンドルを作成したときに呼びます。<br/>
-	 * 必要に応じてオーバーライドし、妥当性の検証や初期化に利用してください。<br/>
+	 * 必要に応じてオーバーライドし、妥当性の検証に利用してください。<br/>
 	 * 問題があったときは {@link io.github.longfish801.tpac.TpacSemanticException}を投げてください。
 	 * @see #validateRecursive()
 	 */
@@ -209,6 +251,28 @@ trait TeaHandle implements Cloneable {
 		validate()
 		// 下位ハンドルの妥当性を検証します
 		lowers.values().each { it.validateRecursive() }
+		return this
+	}
+	
+	/**
+	 * このハンドルに特有の処理をします。<br/>
+	 * デフォルトでは特になにも処理をしません。<br/>
+	 * 必要に応じてオーバーライドし、初期化などをしたい場合に利用してください。<br/>
+	 * このメソッドは{@link #visitRecursive()}から呼ばれます。
+	 */
+	void visit(){
+	}
+	
+	/**
+	 * このハンドルならびに下位ハンドルに特有の処理をします。
+	 * @see #visit()
+	 * @return 自インスタンス
+	 */
+	TeaHandle visitRecursive(){
+		// 自ハンドルの処理をします。
+		visit()
+		// 下位ハンドルの処理をします
+		lowers.values().each { it.visitRecursive() }
 		return this
 	}
 	

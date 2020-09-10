@@ -41,7 +41,7 @@ server << attachment3
 
 StringWriter writer = new StringWriter()
 server.decs.each { it.value.write(writer) }
-assert writer.toString() == new File('src/test/resources/sample.tpac').text
+assert writer.toString().normalize() == new File('src/test/resources/sample.tpac').text
 
 class MailServer implements TeaServer {
 	@Override
