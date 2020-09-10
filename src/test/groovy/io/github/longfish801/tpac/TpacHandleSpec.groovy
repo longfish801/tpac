@@ -14,7 +14,7 @@ import spock.lang.Unroll
 
 /**
  * TpacHandleクラスのテスト。
- * @version 0.3.00 2020/06/03
+ * @version 0.3.06 2020/09/10
  * @author io.github.longfish801
  */
 @Slf4j('LOG')
@@ -206,6 +206,40 @@ class TpacHandleSpec extends Specification {
 		list = handle.findAll(/nosuch/)
 		then:
 		list.size() == 0
+	}
+	
+	def 'validateKeys'(){
+		given:
+		TpacHandle handle = new TpacHandle(tag: 'some', name: 'handle')
+		Map conds
+		
+		when: 'キーに値が指定されていなければデフォルト値を格納します'
+		conds = [ 'boo': [ 'dflt': 'hello' ] ]
+		handle.validateKeys(conds)
+		then:
+		handle.boo == 'hello'
+	}
+	
+	def 'validateKeys - exception'(){
+		given:
+		TpacHandle handle = new TpacHandle(tag: 'some', name: 'handle')
+		Map conds
+		TpacSemanticException exc
+		
+		when: 'キーに値が指定されていなければ例外を投げます'
+		conds = [ 'boo': [ 'required': true ] ]
+		handle.validateKeys(conds)
+		then:
+		exc = thrown(TpacSemanticException)
+		exc.message == String.format(msgs.validate.unspecifiedValue, 'boo')
+		
+		when: '値がリストにないクラスであれば例外を投げます'
+		conds = [ 'boo': [ 'types': [ Integer ] ] ]
+		handle.boo = 'hello'
+		handle.validateKeys(conds)
+		then:
+		exc = thrown(TpacSemanticException)
+		exc.message == String.format(msgs.validate.invalidType, 'boo', String.class.name)
 	}
 	
 	def 'write'(){
