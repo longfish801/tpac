@@ -18,7 +18,7 @@ apply plugin: 'maven-publish'
 
 defaultTasks 'fix'
 group = 'io.github.longfish801'
-version = '0.3.06'
+version = '0.3.07'
 
 repositories {
 	mavenCentral()
@@ -66,7 +66,7 @@ publishing {
 	}
 	repositories {
 		maven { url '../maven' }
-    }
+	}
 }
 
 // サンプルを実行します

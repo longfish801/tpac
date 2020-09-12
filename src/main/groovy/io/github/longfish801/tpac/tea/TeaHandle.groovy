@@ -19,7 +19,7 @@ import org.apache.commons.text.StringEscapeUtils
  * ハンドルの特性です。<br/>
  * インスタンス生成後はタグ、上位ハンドルを設定してください。<br/>
  * 一部のメソッドで java.lang.NullpointerExceptionが発生する恐れがあります。
- * @version 0.3.06 2020/09/10
+ * @version 0.3.07 2020/09/12
  * @author io.github.longfish801
  */
 trait TeaHandle implements Cloneable {
@@ -222,8 +222,8 @@ trait TeaHandle implements Cloneable {
 			} else {
 				// 指定可能なクラスでなければ例外を投げます
 				if (condMap.types != null){
-					if (condMap.types.every { !it.isInstance(map.get(condKey)) }){
-						throw new TpacSemanticException(String.format(msgs.validate.invalidType, condKey, map.get(condKey).class.name))
+					if (condMap.types.every { !(it?.isInstance(map.get(condKey)) || (it == null && map.get(condKey) == null)) }){
+						throw new TpacSemanticException(String.format(msgs.validate.invalidType, condKey, map.get(condKey)?.class?.name))
 					}
 				}
 			}

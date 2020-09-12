@@ -14,7 +14,7 @@ import spock.lang.Unroll
 
 /**
  * TpacHandleクラスのテスト。
- * @version 0.3.06 2020/09/10
+ * @version 0.3.07 2020/09/12
  * @author io.github.longfish801
  */
 @Slf4j('LOG')
@@ -210,24 +210,50 @@ class TpacHandleSpec extends Specification {
 	
 	def 'validateKeys'(){
 		given:
-		TpacHandle handle = new TpacHandle(tag: 'some', name: 'handle')
+		TpacHandle handle
 		Map conds
+		
+		when: '必須チェックをしたい場合はキー「required」にtrueを指定してください'
+		conds = [ 'boo': [ 'required': true ] ]
+		handle = new TpacHandle(tag: 'some', name: 'handle')
+		handle.boo = 'foo'
+		handle.validateKeys(conds)
+		then:
+		handle.boo == 'foo'
 		
 		when: 'キーに値が指定されていなければデフォルト値を格納します'
 		conds = [ 'boo': [ 'dflt': 'hello' ] ]
+		handle = new TpacHandle(tag: 'some', name: 'handle')
 		handle.validateKeys(conds)
 		then:
 		handle.boo == 'hello'
+		
+		when: 'クラスのチェックをしたい場合はキー「types」には設定可能な値のクラスをリストで指定してください'
+		conds = [ 'boo': [ 'types': [ Integer, null ] ] ]
+		handle = new TpacHandle(tag: 'some', name: 'handle')
+		handle.boo = 3
+		handle.validateKeys(conds)
+		then:
+		handle.boo == 3
+		
+		when: 'クラスのチェックをしたい場合はキー「types」には設定可能な値のクラスをリストで指定してください'
+		conds = [ 'boo': [ 'types': [ Integer, null ] ] ]
+		handle = new TpacHandle(tag: 'some', name: 'handle')
+		handle.boo = null
+		handle.validateKeys(conds)
+		then:
+		handle.boo == null
 	}
 	
 	def 'validateKeys - exception'(){
 		given:
-		TpacHandle handle = new TpacHandle(tag: 'some', name: 'handle')
+		TpacHandle handle
 		Map conds
 		TpacSemanticException exc
 		
 		when: 'キーに値が指定されていなければ例外を投げます'
 		conds = [ 'boo': [ 'required': true ] ]
+		handle = new TpacHandle(tag: 'some', name: 'handle')
 		handle.validateKeys(conds)
 		then:
 		exc = thrown(TpacSemanticException)
@@ -235,6 +261,7 @@ class TpacHandleSpec extends Specification {
 		
 		when: '値がリストにないクラスであれば例外を投げます'
 		conds = [ 'boo': [ 'types': [ Integer ] ] ]
+		handle = new TpacHandle(tag: 'some', name: 'handle')
 		handle.boo = 'hello'
 		handle.validateKeys(conds)
 		then:
