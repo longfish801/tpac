@@ -212,20 +212,20 @@ trait TeaHandle implements Cloneable {
 	 */
 	void validateKeys(Map conds){
 		conds.each { String condKey, Map condMap ->
-			if (!map.containsKey(condKey)){
+			if (map.containsKey(condKey)){
+				// 指定可能なクラスでなければ例外を投げます
+				if (condMap.types instanceof List){
+					if (condMap.types.every { !(it?.isInstance(map.get(condKey)) || (it == null && map.get(condKey) == null)) }){
+						throw new TpacSemanticException(String.format(msgs.validate.invalidType, condKey, map.get(condKey)?.class?.name))
+					}
+				}
+			} else {
 				// 必須項目の値が指定されていない場合は例外を投げます
 				if (condMap.required == true){
 					throw new TpacSemanticException(String.format(msgs.validate.unspecifiedValue, condKey))
 				}
 				// デフォルト値を格納します
-				if (condMap.dflt != null) map.put(condKey, condMap.dflt)
-			} else {
-				// 指定可能なクラスでなければ例外を投げます
-				if (condMap.types != null){
-					if (condMap.types.every { !(it?.isInstance(map.get(condKey)) || (it == null && map.get(condKey) == null)) }){
-						throw new TpacSemanticException(String.format(msgs.validate.invalidType, condKey, map.get(condKey)?.class?.name))
-					}
-				}
+				if (condMap.containsKey('dflt')) map.put(condKey, condMap.dflt)
 			}
 		}
 	}
