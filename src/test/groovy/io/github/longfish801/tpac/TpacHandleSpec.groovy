@@ -14,7 +14,7 @@ import spock.lang.Unroll
 
 /**
  * TpacHandleクラスのテスト。
- * @version 0.3.07 2020/09/12
+ * @version 0.3.09 2021/10/26
  * @author io.github.longfish801
  */
 @Slf4j('LOG')
@@ -149,11 +149,15 @@ class TpacHandleSpec extends Specification {
 		TpacHandle lower = new TpacHandle(tag: 'some', name: 'lower')
 		TpacHandle lower2 = new TpacHandle(tag: 'some')
 		TpacHandle lowerlower = new TpacHandle(tag: 'some', name: 'lowerlower')
+		TpacHandle handle2 = new TpacHandle(tag: 'some', name: 'handle2')
+		TpacHandle lower3 = new TpacHandle(tag: 'some', name: 'lower3')
 		server << dec
 		dec << handle
 		handle << lower
 		handle << lower2
 		lower << lowerlower
+		dec << handle2
+		handle2 << lower3
 		
 		expect:
 		handle.solvePath(path).path == expect
@@ -163,6 +167,9 @@ class TpacHandleSpec extends Specification {
 		'/some:dec/some:handle'		|| '/some:dec/some:handle'
 		'..'							|| '/some:dec'
 		'../some:handle'				|| '/some:dec/some:handle'
+		'../some:handle/some:lower'	|| '/some:dec/some:handle/some:lower'
+		'../some:handle2/some:lower3'	|| '/some:dec/some:handle2/some:lower3'
+		'../some:handle2/..'			|| '/some:dec'
 		'some:lower'					|| '/some:dec/some:handle/some:lower'
 		'some'						|| '/some:dec/some:handle/some'
 		'some:_'						|| '/some:dec/some:handle/some'
@@ -402,7 +409,7 @@ class TpacHandleSpec extends Specification {
 		
 		where:
 		value		|| expect
-		null		|| 'null'
+		null			|| 'null'
 		true		|| 'true'
 		false		|| 'false'
 		-1			|| '-1'
@@ -410,14 +417,16 @@ class TpacHandleSpec extends Specification {
 		TpacRefer.newInstance(new TpacHandle(tag: 'handle'), '..')	|| '@..'
 		Pattern.compile(/.+/)	|| ':.+'
 		new TpacEval('3+2')	|| '=3+2'
+		"${'abc'}d${System.lineSeparator()}"	|| '_abcd\\r\\n'
 		'null'		|| '_null'
 		'true'		|| '_true'
 		'false'		|| '_false'
 		'@..'		|| '_@..'
 		':.+'		|| '_:.+'
 		'=3+2'		|| '_=3+2'
-		'_hello'	|| '__hello'
+		'_hello'		|| '__hello'
 		"a\nb"		|| '_a\\nb'
+		"\na\n\nb\n"	|| '_\\na\\n\\nb\\n'
 		''			|| '_'
 		'abc'		|| 'abc'
 	}

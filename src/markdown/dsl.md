@@ -126,4 +126,3 @@ class Mail implements TeaHandle {
 ```
 
 　このサンプルコードは build.gradle内の execSampleDslタスクで実行しています。
-

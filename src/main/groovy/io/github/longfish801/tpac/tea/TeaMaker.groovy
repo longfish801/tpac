@@ -21,7 +21,7 @@ import org.apache.commons.text.StringEscapeUtils
  * 独自DSLのため実装するときは {@link #newTeaDec(String,String)}、
  * {@link #newTeaHandle(String,String,TeaHandle)}を
  * オーバーライドしてください。
- * @version 0.3.00 2020/05/23
+ * @version 0.3.09 2021/10/26
  * @author io.github.longfish801
  */
 trait TeaMaker {
@@ -93,6 +93,7 @@ trait TeaMaker {
 	 * @param level 階層
 	 * @param scalar スカラー値
 	 * @exception TpacSemanticException ハンドルの階層はひとつずつ上げる必要があります。
+	 * @exception TpacSemanticException ハンドルの識別キーが重複しています。
 	 */
 	void createHandle(String tag, String name, int level, String scalar){
 		if (level - handle.level > 1){
@@ -117,6 +118,10 @@ trait TeaMaker {
 		handle = this.newTeaHandle(tag, name, upper)
 		handle.tag = tag
 		if (name != cnst.omit.handleName) handle.name = name
+		if (upper.lowers[handle.key] != null){
+			// 親ハンドルに同じキーが設定済（キーが重複）であれば例外を投げます
+			throw new TpacSemanticException(String.format(msgs.exc.duplicateHandleKey, handle.key, upper.path))
+		}
 		upper << handle
 		createMap(cnst.dflt.mapKey, scalar)
 	}

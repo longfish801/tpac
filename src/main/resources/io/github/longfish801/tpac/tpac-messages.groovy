@@ -6,6 +6,7 @@ exc {
 	cannotSkipLevel = 'Cannot skip level of handle. tag=%s, name=%s, level=%s'
 	duplicateMapKeyText = 'Duplicate map key for text. key=%s'
 	duplicateMapKey = 'Duplicate map key. key=%s, scalar=%s'
+	duplicateHandleKey = 'Duplicate handle key. key=%s, upper=%s'
 	noSharpTop = 'No sharp is allowed at top of the text.'
 	commentBeforeMap = 'Comments can only come before the map.'
 	cannotBlankMapText = 'Cannot specify a blank line for text as a map value, .'

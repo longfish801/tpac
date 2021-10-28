@@ -19,7 +19,7 @@ import org.apache.commons.text.StringEscapeUtils
  * ハンドルの特性です。<br/>
  * インスタンス生成後はタグ、上位ハンドルを設定してください。<br/>
  * 一部のメソッドで java.lang.NullpointerExceptionが発生する恐れがあります。
- * @version 0.3.07 2020/09/12
+ * @version 0.3.09 2021/10/26
  * @author io.github.longfish801
  */
 trait TeaHandle implements Cloneable {
@@ -403,6 +403,8 @@ trait TeaHandle implements Cloneable {
 			case TpacEval:
 				raw = "${cnst.scalar.eval}${value.expression}"
 				break
+			case GString:
+				value = value.toString()
 			case String:
 				switch (value){
 					case cnst.scalar.kwdNull:
@@ -414,13 +416,13 @@ trait TeaHandle implements Cloneable {
 					case {it.startsWith(cnst.scalar.rex)}:
 					case {it.startsWith(cnst.scalar.eval)}:
 					case {it.startsWith(cnst.scalar.str)}:
-					case {it ==~ /.*[\r\n]..*/}:
+					case {it.indexOf('\n') >= 0 || it.indexOf('\r') >= 0}:
 					case {it.empty}:
 						value = StringEscapeUtils.escapeJava(value)
 						raw = "${cnst.scalar.str}${value}"
 						break
 					default:
-						raw = value.toString()
+						raw = value
 						break
 				}
 				break

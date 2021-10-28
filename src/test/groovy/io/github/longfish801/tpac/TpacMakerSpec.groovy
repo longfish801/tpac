@@ -15,7 +15,7 @@ import spock.lang.Shared
 
 /**
  * TpacMakerクラスのテスト。
- * @version 0.3.00 2020/05/06
+ * @version 0.3.09 2021/10/26
  * @author io.github.longfish801
  */
 @Slf4j('LOG')
@@ -115,6 +115,22 @@ class TpacMakerSpec extends Specification {
 		then:
 		exc = thrown(TpacSemanticException)
 		exc.message == String.format(msgs.exc.cannotSkipLevel, 'handle', 'some', 2)
+		
+		when:
+		maker.createDec('dec', 'some', 'hello')
+		maker.createHandle('handle', 'some', 1, 'bye')
+		maker.createHandle('handle', 'some', 1, 'hey')
+		then:
+		exc = thrown(TpacSemanticException)
+		exc.message == String.format(msgs.exc.duplicateHandleKey, 'handle:some', '/dec:some')
+		
+		when:
+		maker.createDec('dec', 'some', 'hello')
+		maker.createHandle('handle', 'some', 1, '_')
+		maker.createHandle('handle', 'some', 1, '_')
+		then:
+		exc = thrown(TpacSemanticException)
+		exc.message == String.format(msgs.exc.duplicateHandleKey, 'handle:some', '/dec:some')
 	}
 	
 	def 'createText'(){
