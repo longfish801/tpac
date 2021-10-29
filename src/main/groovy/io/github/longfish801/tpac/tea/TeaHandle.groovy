@@ -13,7 +13,6 @@ import io.github.longfish801.tpac.TpacRefer
 import io.github.longfish801.tpac.TpacSemanticException
 import java.util.regex.Matcher
 import java.util.regex.Pattern
-import org.apache.commons.text.StringEscapeUtils
 
 /**
  * ハンドルの特性です。<br/>
@@ -23,6 +22,8 @@ import org.apache.commons.text.StringEscapeUtils
  * @author io.github.longfish801
  */
 trait TeaHandle implements Cloneable {
+	/** スカラー値でエスケープの対象となる文字の正規表現 */
+	static Pattern escPttrn = Pattern.compile(/[\n\r\f\u0008\t\'\"\\]/, Pattern.MULTILINE)
 	/** タグ */
 	String tag
 	/** 名前 */
@@ -416,10 +417,9 @@ trait TeaHandle implements Cloneable {
 					case {it.startsWith(cnst.scalar.rex)}:
 					case {it.startsWith(cnst.scalar.eval)}:
 					case {it.startsWith(cnst.scalar.str)}:
-					case {it.indexOf('\n') >= 0 || it.indexOf('\r') >= 0}:
+					case {escPttrn.matcher(it).find() }:
 					case {it.empty}:
-						value = StringEscapeUtils.escapeJava(value)
-						raw = "${cnst.scalar.str}${value}"
+						raw = "${cnst.scalar.str}${escapeJavaExceptMultiByteString(value)}"
 						break
 					default:
 						raw = value
@@ -430,6 +430,26 @@ trait TeaHandle implements Cloneable {
 				throw new TpacHandlingException(String.format(msgs.exc.noSupportScalarString, value, value.class.name))
 		}
 		return raw
+	}
+	
+	/**
+	 * Javaにおけるエスケープシーケンスの対象となる文字（ただしマルチバイト文字を除く）をエスケープして返します。<br/>
+	 * たとえば改行コード(\n)を文字列「\n」に置換します。<br/>
+	 * Apache Commons Textの StringEscapeUtilsクラスのescapeJavaメソッドはマルチバイト文字も
+	 * エスケープ対象となるため、マルチバイト文字を除いてエスケープする処理を作成しました。
+	 * @param target 対象文字列
+	 * @return エスケープ後の文字列
+	 */
+	static String escapeJavaExceptMultiByteString(String target){
+		target = target.replaceAll('\\\\', '\\\\\\\\')
+		target = target.replaceAll(/\n/, /\\n/)
+		target = target.replaceAll(/\r/, /\\r/)
+		target = target.replaceAll(/\f/, /\\f/)
+		target = target.replaceAll(/\u0008/, /\\b/)
+		target = target.replaceAll(/\t/, /\\t/)
+		target = target.replaceAll(/\'/, /\\'/)
+		target = target.replaceAll(/\"/, /\\"/)
+		return target
 	}
 	
 	/**
