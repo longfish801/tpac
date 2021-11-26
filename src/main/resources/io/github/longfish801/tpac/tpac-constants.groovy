@@ -47,12 +47,6 @@ dflt {
 	mapKey = '_'
 }
 
-// 省略時の値
-omit {
-	handleName = ''
-	mapKey = ''
-}
-
 // スカラー
 scalar {
 	kwdNull = 'null'

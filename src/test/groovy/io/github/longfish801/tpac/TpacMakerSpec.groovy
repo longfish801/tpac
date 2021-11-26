@@ -57,7 +57,7 @@ class TpacMakerSpec extends Specification {
 		maker.keyForText == cnst.dflt.mapKey
 		
 		when:
-		maker.createDec('dec', cnst.omit.handleName, null)
+		maker.createDec('dec', '_', null)
 		then:
 		maker.handle.key == 'dec'
 		maker.handle.dflt == null
@@ -77,7 +77,7 @@ class TpacMakerSpec extends Specification {
 		when: '同じ階層を連続して追加'
 		maker.createDec('dec', 'some', 'hello')
 		maker.createHandle('handle', 'some', 1, 'bye')
-		maker.createHandle('handle', '', 1, 'hi')
+		maker.createHandle('handle', '_', 1, 'hi')
 		then:
 		maker.handle.key == 'handle'
 		maker.handle.upper.key == 'dec:some'
@@ -86,7 +86,7 @@ class TpacMakerSpec extends Specification {
 		
 		when: 'ひとつ上の階層を追加'
 		maker.createDec('dec', 'some', 'hello')
-		maker.createHandle('handle', '', 1, 'bye')
+		maker.createHandle('handle', '_', 1, 'bye')
 		maker.createHandle('handle', 'some', 2, 'hi')
 		maker.createHandle('handle', 'buff', 1, 'bye-bye')
 		then:
@@ -97,7 +97,7 @@ class TpacMakerSpec extends Specification {
 		
 		when: '名前を省略した場合'
 		maker.createDec('dec', 'some', 'hello')
-		maker.createHandle('handle', cnst.omit.handleName, 1, null)
+		maker.createHandle('handle', '_', 1, null)
 		then:
 		maker.handle.key == 'handle'
 		maker.handle.upper.key == 'dec:some'
@@ -126,11 +126,11 @@ class TpacMakerSpec extends Specification {
 		
 		when:
 		maker.createDec('dec', 'some', 'hello')
-		maker.createHandle('handle', 'some', 1, '_')
-		maker.createHandle('handle', 'some', 1, '_')
+		maker.createHandle('handle', '_', 1, null)
+		maker.createHandle('handle', '_', 1, 'hey')
 		then:
 		exc = thrown(TpacSemanticException)
-		exc.message == String.format(msgs.exc.duplicateHandleKey, 'handle:some', '/dec:some')
+		exc.message == String.format(msgs.exc.duplicateHandleKey, 'handle', '/dec:some')
 	}
 	
 	def 'createText'(){

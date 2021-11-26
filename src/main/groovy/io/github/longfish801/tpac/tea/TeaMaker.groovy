@@ -75,7 +75,7 @@ trait TeaMaker {
 	void createDec(String tag, String name, String scalar){
 		handle = this.newTeaDec(tag, name)
 		handle.tag = tag
-		if (name != cnst.omit.handleName) handle.name = name
+		handle.name = name
 		createMap(cnst.dflt.mapKey, scalar)
 	}
 	
@@ -117,8 +117,8 @@ trait TeaMaker {
 		// ハンドルを作成する
 		handle = this.newTeaHandle(tag, name, upper)
 		handle.tag = tag
-		if (name != cnst.omit.handleName) handle.name = name
-		if (upper.lowers[handle.key] != null){
+		handle.name = name
+		if (upper.lowers[handle.keyNatural] != null){
 			// 親ハンドルに同じキーが設定済（キーが重複）であれば例外を投げます
 			throw new TpacSemanticException(String.format(msgs.exc.duplicateHandleKey, handle.key, upper.path))
 		}
