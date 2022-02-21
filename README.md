@@ -103,5 +103,5 @@ This sample code is executed in the execSample task, see build.gradle.
 
 ## Next Step
 
-Please see the [documents](https://longfish801.github.io/tpac/) for more detail.
+Please see the [documents](https://longfish801.github.io/maven/tpac/) for more detail.
 

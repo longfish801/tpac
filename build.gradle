@@ -20,6 +20,12 @@ defaultTasks 'fix'
 group = 'io.github.longfish801'
 version = '0.4.00'
 
+// 環境変数からローカルのmavenリポジトリへのパスを取得します
+String mavenPath = System.env['MAVEN_PATH']
+if (mavenPath == null || mavenPath.empty){
+	throw new Exception('Environment variables MAVEN_PATH is required.')
+}
+
 repositories {
 	mavenCentral()
 	maven { url 'https://longfish801.github.io/maven/' }
@@ -57,7 +63,7 @@ generateHtml {
 	inputDirectory = file('src/markdown')
 	headerHtmlFile = file('src/markdown/template/header.html')
 	footerHtmlFile = file('src/markdown/template/footer.html')
-	pegdownExtensions = 'TOC,EXTANCHORLINKS,HARDWRAPS,FENCED_CODE_BLOCKS,DEFINITIONS,TABLES'
+	pegdownExtensions = 'TOC,ANCHORLINKS,EXTANCHORLINKS,HARDWRAPS,FENCED_CODE_BLOCKS,DEFINITIONS,TABLES'
 }
 
 publishing {
@@ -65,7 +71,7 @@ publishing {
 		mavenJava(MavenPublication) { from components.java }
 	}
 	repositories {
-		maven { url '../maven' }
+		maven { url mavenPath }
 	}
 }
 
@@ -78,32 +84,27 @@ task execSampleDsl(type: JavaExec) {
 	main = 'SampleDsl'
 	classpath = sourceSets.test.runtimeClasspath
 }
-task execSamples(dependsOn: [execSample, execSampleDsl]) {
-}
+task execSamples(dependsOn: [execSample, execSampleDsl]) { }
 
 // フィックスします
-task fix(dependsOn: [clean, jacocoTestReport, execSamples, groovydoc, generateHtml]){
-}
+task fix(dependsOn: [clean, jacocoTestReport, execSamples, groovydoc, generateHtml]){ }
 
-// マスターアップします
-task deleteDocs(type: Delete){
-	delete 'docs'
+// ドキュメントをローカルのmavenリポジトリに出力します
+task deleteDoc(type: Delete){
+	delete "${mavenPath}/${project.name}"
 }
-clean.dependsOn deleteDocs
-task masterup(dependsOn: [groovydoc, generateHtml, deleteDocs]){
+task publishDoc(dependsOn: [deleteDoc, groovydoc, generateHtml]){
 	doLast {
 		copy {
 			from 'build/html'
-			into 'docs'
+			into "${mavenPath}/${project.name}"
 		}
 		copy {
 			from 'build/docs/groovydoc'
-			into 'docs/groovydoc'
+			into "${mavenPath}/${project.name}/groovydoc"
 		}
 	}
 }
 
 // リリースします
-task release(dependsOn: [publish]){
-}
-
+task release(dependsOn: [publish, publishDoc]){ }
