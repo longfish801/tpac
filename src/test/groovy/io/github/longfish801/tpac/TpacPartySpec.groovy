@@ -566,18 +566,6 @@ class TpacPartySpec extends Specification implements GropedResource {
 		exc.message == msgs.exc.parseError
 		exc.errors[0].exc instanceof TpacSyntaxException
 		exc.errors[0].exc.message == msgs.exc.invalidDec
-		
-		when:
-		source = '''\
-			#! dec:some
-			#! dec:some
-			'''.stripIndent()
-		party.parse(source)
-		then:
-		exc = thrown(TpacParseExceptions)
-		exc.message == msgs.exc.parseError
-		exc.errors[0].exc instanceof TpacSyntaxException
-		exc.errors[0].exc.message == String.format(msgs.exc.duplicateIdKey, 'dec:some')
 	}
 	
 	def 'leafHandle'(){

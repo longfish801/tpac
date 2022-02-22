@@ -61,12 +61,20 @@ trait TeaServer {
 	}
 	
 	/**
-	 * 対象を解析して tpac文書を生成し保持します。
+	 * 対象を解析して tpac文書を生成し保持します。<br/>
+	 * 同じ識別キーの宣言が複数あるときはマージします。
 	 * @param source 解析対象（File、URL、String、BufferedReaderのいずれか）
 	 * @return 自インスタンス
 	 */
 	TeaServer soak(def source){
-		newParty().parse(source).each { this << it.validateRecursive() }
+		newParty().parse(source).each {
+			def dec = it.validateRecursive()
+			if (decs.containsKey(dec.key)){
+				decs[dec.key] += dec
+			} else {
+				this << dec
+			}
+		}
 		return this
 	}
 	
@@ -74,7 +82,6 @@ trait TeaServer {
 	 * tpac文書の宣言を追加します。
 	 * @param dec 宣言
 	 * @return 自インスタンス
-	 * @exception TpacHandlingException 識別キーが重複する宣言は追加できません
 	 */
 	TeaServer leftShift(TeaDec dec){
 		dec.server = this

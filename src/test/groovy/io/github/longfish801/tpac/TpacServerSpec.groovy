@@ -59,6 +59,22 @@ class TpacServerSpec extends Specification {
 		then:
 		server['tpac'].key == 'tpac'
 		server['tpac:second'].key == 'tpac:second'
+		
+		when: '同じ識別キーがあるときはマージされること'
+		source = '''\
+			#! tpac:some
+			#-key1 one
+			#-key2 two
+			#! tpac:some
+			#-key2 TWO
+			#-key3 three
+			'''.stripIndent()
+		server.soak(source)
+		then:
+		server['tpac:some'].key == 'tpac:some'
+		server['tpac:some'].map['key1'] == 'one'
+		server['tpac:some'].map['key2'] == 'TWO'
+		server['tpac:some'].map['key3'] == 'three'
 	}
 	
 	def 'leftShift'(){

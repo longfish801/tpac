@@ -12,7 +12,6 @@ exc {
 	cannotBlankMapText = 'Cannot specify a blank line for text as a map value, .'
 	cannotEmptyListText = 'Cannot specify an empty list as text.'
 	invalidDec = 'Invalid declaration, check syntax.'
-	duplicateIdKey = 'Duplicate identification key, Cannnot add a declaration. key=%s'
 	invalidHandle = 'Invalid handle beginning line, check syntax.'
 	invalidIdKey = 'Invalid identification key, check syntax.'
 	parseError = 'Failed to parse tpac document.'
