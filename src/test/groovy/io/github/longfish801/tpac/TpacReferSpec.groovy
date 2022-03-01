@@ -25,7 +25,7 @@ class TpacReferSpec extends Specification {
 		dec = new TpacDec(tag: 'dec')
 		handle = new TpacHandle(tag: 'some', name: 'thing')
 		handle.happend = 'OK?'
-		handle._ = 'OK!'
+		handle.dflt = 'OK!'
 		dec << handle
 	}
 	

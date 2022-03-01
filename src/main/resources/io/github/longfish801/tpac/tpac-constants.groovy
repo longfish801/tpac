@@ -43,8 +43,8 @@ line {
 
 // デフォルト値
 dflt {
-	handleName = '_'
-	mapKey = '_'
+	handleName = 'dflt'
+	mapKey = 'dflt'
 }
 
 // スカラー

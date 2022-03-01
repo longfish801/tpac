@@ -128,11 +128,22 @@ trait TeaServer {
 	}
 	
 	/**
-	 * 識別キーが正規表現と一致する宣言のリストを取得します。
+	 * 未加工の識別キーが正規表現と一致する宣言のリストを取得します。
 	 * @param regex 正規表現
-	 * @return 識別キーが正規表現と一致する宣言のリスト（みつからない場合は空リスト）
+	 * @return 未加工の識別キーが正規表現と一致する宣言のリスト（みつからない場合は空リスト）
 	 */
 	List<TeaDec> findAll(String regex){
-		return decs.values().findAll { it.key =~ regex }
+		return decs.values().findAll { it.keyNatural =~ regex }
+	}
+	
+	/**
+	 * クロージャによって対象と判定した宣言のリストを取得します。<br/>
+	 * クロージャには引数として未加工の識別キーを渡します。<br/>
+	 * 戻り値に含めるか否か判定を返してください。<br/>
+	 * @param clos 未加工の識別キーから対象か否か判定を返すクロージャ
+	 * @return クロージャが対象と判定した宣言のリスト（みつからない場合は空リスト）
+	 */
+	List<TeaDec> findAll(Closure clos){
+		return decs.values().findAll { clos.call(it.keyNatural) }
 	}
 }

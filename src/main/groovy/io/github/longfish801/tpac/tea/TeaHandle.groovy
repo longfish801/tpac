@@ -50,8 +50,7 @@ trait TeaHandle implements Cloneable {
 	
 	/**
 	 * 未加工の識別キーを返します。<br/>
-	 * 識別キーはタグ名と名前を半角コロンで連結した文字列です。<br/>
-	 * 名前を省略した場合、名前として半角アンダーバーを用います。
+	 * 識別キーはタグ名と名前を半角コロンで連結した文字列です。
 	 * @return 未加工の識別キー
 	 */
 	String getKeyNatural(){
@@ -126,14 +125,6 @@ trait TeaHandle implements Cloneable {
 	}
 	
 	/**
-	 * マップからデフォルトキーに対応する値を参照します。
-	 * @return デフォルトキーに対応する値
-	 */
-	def getDflt(){
-		return getAt(cnst.dflt.mapKey)
-	}
-	
-	/**
 	 * このハンドルの絶対パスを返します。
 	 * @return 絶対パス
 	 */
@@ -188,6 +179,19 @@ trait TeaHandle implements Cloneable {
 	 */
 	List<TeaHandle> findAll(String regex){
 		return lowers.values().findAll { it.keyNatural =~ regex }
+	}
+	
+	/**
+	 * クロージャによって対象と判定した下位ハンドルのリストを取得します。<br/>
+	 * クロージャには引数として未加工の識別キーを渡します。<br/>
+	 * 戻り値に含めるか否か判定を返してください。<br/>
+	 * 直下の下位ハンドルのみ探します。<br/>
+	 * 再帰的にさらに下位まで探すわけではないことに注意してください。
+	 * @param clos 未加工の識別キーから対象か否か判定を返すクロージャ
+	 * @return クロージャが対象と判定した下位ハンドルのリスト（みつからない場合は空リスト）
+	 */
+	List<TeaHandle> findAll(Closure clos){
+		return lowers.values().findAll { clos.call(it.keyNatural) }
 	}
 	
 	/**

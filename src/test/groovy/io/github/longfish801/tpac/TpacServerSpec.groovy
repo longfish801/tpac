@@ -144,14 +144,14 @@ class TpacServerSpec extends Specification {
 		server << dec2
 		List list
 		
-		when: 'タグが someで、名前が空文字ではない宣言を取得します'
-		list = server.findAll(/^some:/)
+		when: 'デフォルトキー以外の宣言を取得します'
+		list = server.findAll { it != 'some:dflt' }
 		then:
 		list.size() == 1
 		list.collect { it.key } == [ 'some:dec2' ]
 		
 		when: 'タグが someの宣言を取得します'
-		list = server.findAll(/^some|some:.+$/)
+		list = server.findAll(/^some:.+$/)
 		then:
 		list.size() == 2
 		list.collect { it.key } == [ 'some', 'some:dec2' ]

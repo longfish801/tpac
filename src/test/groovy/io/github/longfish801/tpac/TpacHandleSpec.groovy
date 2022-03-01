@@ -46,7 +46,7 @@ class TpacHandleSpec extends Specification {
 		when: '名前を省略した場合、名前として半角アンダーバーを用います'
 		handle = new TpacHandle(tag: 'some')
 		then:
-		handle.keyNatural == 'some:_'
+		handle.keyNatural == 'some:dflt'
 	}
 	
 	def 'getDec'(){
@@ -83,7 +83,7 @@ class TpacHandleSpec extends Specification {
 		when:
 		handle << lower
 		then:
-		handle.lowers['lower:_'] == lower
+		handle.lowers['lower:dflt'] == lower
 		lower.upper == handle
 	}
 	
@@ -107,17 +107,6 @@ class TpacHandleSpec extends Specification {
 		handle['boo'] = 'foo'
 		then:
 		handle['boo'] == 'foo'
-	}
-	
-	def 'getDflt'(){
-		given:
-		TpacHandle handle
-		
-		when:
-		handle = new TpacHandle(tag: 'some', name: 'handle')
-		handle.setAt(cnst.dflt.mapKey, 'foo')
-		then:
-		handle.dflt == 'foo'
 	}
 	
 	def 'getPath'(){
@@ -172,7 +161,7 @@ class TpacHandleSpec extends Specification {
 		'../some:handle2/..'			|| '/some:dec'
 		'some:lower'					|| '/some:dec/some:handle/some:lower'
 		'some'						|| '/some:dec/some:handle/some'
-		'some:_'						|| '/some:dec/some:handle/some'
+		'some:dflt'						|| '/some:dec/some:handle/some'
 		'some:lower/some:lowerlower'	|| '/some:dec/some:handle/some:lower/some:lowerlower'
 	}
 	
@@ -197,8 +186,8 @@ class TpacHandleSpec extends Specification {
 		handle << lower2
 		List list
 		
-		when: 'タグが someで、名前が省略されていない下位ハンドルを取得します'
-		list = handle.findAll(/^some:[^_]+$/)
+		when: 'dflt以外の下位ハンドルを取得します'
+		list = handle.findAll { it != 'some:dflt' }
 		then:
 		list.size() == 1
 		list.collect { it.key } == [ 'some:lower2' ]
@@ -311,7 +300,7 @@ class TpacHandleSpec extends Specification {
 		handle.comments << 'comment 1'
 		handle.comments << 'comment 2'
 		handle.comments << 'comment 3'
-		handle['_'] = [ 'default value1', 'default value2' ]
+		handle['dflt'] = [ 'default value1', 'default value2' ]
 		handle['key1'] = 'val1'
 		handle['key2'] = [ 'val2', 'val3' ]
 		result = getString(handle)
@@ -469,7 +458,7 @@ class TpacHandleSpec extends Specification {
 		cloned = handle.clone()
 		then:
 		cloned.upper.key == dec.key
-		cloned.lowers['lower:_'].key == lower.key
+		cloned.lowers['lower:dflt'].key == lower.key
 		cloned.comments[0] == 'Comment'
 		cloned.KEY == 'VAL'
 	}
