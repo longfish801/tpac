@@ -8,6 +8,7 @@ package io.github.longfish801.tpac
 import groovy.util.logging.Slf4j
 import io.github.longfish801.tpac.TpacConst as cnst
 import io.github.longfish801.tpac.TpacMsg as msgs
+import io.github.longfish801.tpac.tea.TeaHandle
 import java.util.regex.Pattern
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -130,7 +131,7 @@ class TpacHandleSpec extends Specification {
 	}
 	
 	@Unroll
-	def 'solvePath'(){
+	def 'solve'(){
 		given:
 		TpacServer server = new TpacServer()
 		TpacDec dec = new TpacDec(tag: 'some', name: 'dec')
@@ -149,32 +150,69 @@ class TpacHandleSpec extends Specification {
 		handle2 << lower3
 		
 		expect:
-		handle.solvePath(path).path == expect
+		handle.solve(path).path == expect
 		
 		where:
-		path						|| expect
-		'/some:dec/some:handle'		|| '/some:dec/some:handle'
+		path							|| expect
+		'/some:dec/some:handle'			|| '/some:dec/some:handle'
 		'..'							|| '/some:dec'
 		'../some:handle'				|| '/some:dec/some:handle'
-		'../some:handle/some:lower'	|| '/some:dec/some:handle/some:lower'
+		'../some:handle/some:lower'		|| '/some:dec/some:handle/some:lower'
 		'../some:handle2/some:lower3'	|| '/some:dec/some:handle2/some:lower3'
 		'../some:handle2/..'			|| '/some:dec'
 		'some:lower'					|| '/some:dec/some:handle/some:lower'
-		'some'						|| '/some:dec/some:handle/some'
+		'some'							|| '/some:dec/some:handle/some'
 		'some:dflt'						|| '/some:dec/some:handle/some'
 		'some:lower/some:lowerlower'	|| '/some:dec/some:handle/some:lower/some:lowerlower'
 	}
 	
-	def 'solvePath - exception'(){
+	def 'solve - exception'(){
 		given:
 		TpacHandle handle = new TpacHandle(tag: 'some', name: 'handle')
 		TpacHandlingException exc
 		
 		when:
-		handle.solvePath('#')
+		handle.solve('#')
 		then:
 		exc = thrown(TpacHandlingException)
 		exc.message == String.format(msgs.exc.invalidpath, '#')
+	}
+	
+	@Unroll
+	def 'refer'(){
+		given:
+		TpacServer server = new TpacServer()
+		TpacDec dec = new TpacDec(tag: 'some', name: 'dec')
+		TpacHandle handle = new TpacHandle(tag: 'some', name: 'handle')
+		TpacHandle lower = new TpacHandle(tag: 'some', name: 'lower')
+		TpacHandle lower2 = new TpacHandle(tag: 'some')
+		server << dec
+		dec << handle
+		handle << lower
+		handle << lower2
+		lower2.dflt = 'lower2dflt'
+		lower2.somekey = 'lower2somekey'
+		handle.dflt = 'handleDflt'
+		handle.somekey = 'handleSomekey'
+		Closure getRefered = {
+			def refered = handle.refer(path)
+			return (refered instanceof TeaHandle)? refered.path : refered
+		}
+		
+		expect:
+		getRefered.call(path) == expect
+		
+		where:
+		path						|| expect
+		'some:lower'				|| '/some:dec/some:handle/some:lower'
+		'some#somekey'				|| 'lower2somekey'
+		'some#'						|| 'lower2dflt'
+		'#somekey'					|| 'handleSomekey'
+		'#'							|| 'handleDflt'
+		'..'						|| '/some:dec'
+		'../some:handle'			|| '/some:dec/some:handle'
+		'../some:handle#somekey'	|| 'handleSomekey'
+		'../some:handle#'			|| 'handleDflt'
 	}
 	
 	def 'findAll'(){

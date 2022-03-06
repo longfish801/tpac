@@ -52,8 +52,8 @@ trait TeaDec extends TeaHandle {
 	 * @return パスに対応するハンドル（該当するハンドルがなければnull）
 	 */
 	@Override
-	TeaHandle solvePath(String path){
-		return (path.startsWith(cnst.path.level))? server.solvePath(path) : super.solvePath(path)
+	TeaHandle solve(String path){
+		return (path.startsWith(cnst.path.level))? server.solve(path) : super.solve(path)
 	}
 	
 	/**

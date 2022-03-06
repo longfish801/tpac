@@ -116,7 +116,7 @@ trait TeaServer {
 	 * @return パスに対応するハンドル（該当するハンドルがなければnull）
 	 * @exception TpacHandlingException 統語的にありえないパスです
 	 */
-	TeaHandle solvePath(String path){
+	TeaHandle solve(String path){
 		// パス区切り文字で分割した先頭の要素を解決します
 		if (cnst.path.decs.every { !(path ==~ it) }){
 			throw new TpacHandlingException(String.format(msgs.exc.invalidpath, path))
@@ -124,7 +124,7 @@ trait TeaServer {
 		Matcher matcher = Matcher.lastMatcher
 		String deckey = matcher.group(1)
 		String other = (matcher.groupCount() >= 2)? matcher.group(2) : null
-		return (other == null)? decs[deckey] : decs[deckey]?.solvePath(other)
+		return (other == null)? decs[deckey] : decs[deckey]?.solve(other)
 	}
 	
 	/**

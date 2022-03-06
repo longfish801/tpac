@@ -92,9 +92,9 @@ assert thread.key == 'thread'
 assert thread.lowers['mail:1'].from == 'Lucy'
 assert thread.lowers['mail:1'].dflt == [ 'Hi everyone.', 'Any good scripts?' ]
 assert thread.lowers['mail:1'].lowers['mail:2'].comments == [ 'Reply message for 1' ]
-def mail2 = thread.solvePath('mail:1/mail:2')
+def mail2 = thread.solve('mail:1/mail:2')
 assert mail2.attachment.refer().hello == [ "println 'Hello, World!'", "println 'Hello, tpac!'" ]
-def mail3 = server.solvePath('/thread/mail:1/mail:3')
+def mail3 = server.solve('/thread/mail:1/mail:3')
 assert mail3.from == 'Lucy'
 assert mail3.attachment.refer() == [ 'Hello, World!', 'Hello, tpac!' ]
 assert server.findAll(/^attachment:\d+$/).collect { it.key } == [ 'attachment:2', 'attachment:3' ]
@@ -131,7 +131,7 @@ dependencies {
 ## 改版履歴
 
 0.3.01
-: solvePathメソッドで自ハンドルと一致した場合の分岐は不要なため削除しました。
+: solveメソッドで自ハンドルと一致した場合の分岐は不要なため削除しました。
 
 0.3.02
 : TeaHandleにgetDfltメソッドを追加しました。
@@ -166,3 +166,7 @@ dependencies {
 
 0.3.12
 : デフォルトキーの実体を文字列"dflt"に変更しました。
+
+0.3.13
+: TeaHandleクラスのsolvePathメソッドをsolveメソッドに変更しました。
+: TeaHandleクラスにreferメソッドを追加しました。

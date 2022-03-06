@@ -109,7 +109,7 @@ class TpacServerSpec extends Specification {
 	}
 	
 	@Unroll
-	def 'solvePath'(){
+	def 'solve'(){
 		given:
 		TpacDec dec = new TpacDec(tag: 'dec')
 		TpacHandle handle = new TpacHandle(tag: 'handle')
@@ -117,7 +117,7 @@ class TpacServerSpec extends Specification {
 		dec << handle
 		
 		expect:
-		server.solvePath(path).path == expect
+		server.solve(path).path == expect
 		
 		where:
 		path			|| expect
@@ -125,12 +125,12 @@ class TpacServerSpec extends Specification {
 		'/dec/handle'	|| '/dec/handle'
 	}
 	
-	def 'solvePath - exception'(){
+	def 'solve - exception'(){
 		given:
 		TpacHandlingException exc
 		
 		when:
-		server.solvePath('x')
+		server.solve('x')
 		then:
 		exc = thrown(TpacHandlingException)
 		exc.message == String.format(msgs.exc.invalidpath, 'x')

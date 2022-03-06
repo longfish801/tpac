@@ -32,7 +32,7 @@ String script = '''\
 	'''.stripIndent()
 
 def server = new MailServer().soak(script)
-def mail1 = server.solvePath('/thread/mail:1')
+def mail1 = server.solve('/thread/mail:1')
 assert mail1 instanceof Mail
 mail1.reply(mail2)
 mail1.reply(mail3)

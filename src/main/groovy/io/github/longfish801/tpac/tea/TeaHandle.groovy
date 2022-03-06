@@ -152,9 +152,9 @@ trait TeaHandle implements Cloneable {
 	 * @return パスに対応するハンドル（該当するハンドルがなければnull）
 	 * @exception TpacHandlingException 統語的にありえないパスです
 	 */
-	TeaHandle solvePath(String path){
+	TeaHandle solve(String path){
 		// 絶対パスの場合は宣言に解決を依頼します
-		if (path.startsWith(cnst.path.level)) return dec.solvePath(path)
+		if (path.startsWith(cnst.path.level)) return dec.solve(path)
 		// パス区切り文字で分割した先頭の要素を解決します
 		if (cnst.path.handles.every { !(path ==~ it) }){
 			throw new TpacHandlingException(String.format(msgs.exc.invalidpath, path))
@@ -163,11 +163,35 @@ trait TeaHandle implements Cloneable {
 		String firstPath = matcher.group(1)
 		String otherPath = (matcher.groupCount() >= 2)? matcher.group(2) : ''
 		if (firstPath == cnst.path.upper){	// 上位のパスの場合
-			return (otherPath.empty)? upper : upper?.solvePath(otherPath)
+			return (otherPath.empty)? upper : upper?.solve(otherPath)
 		}
 		// 下位ハンドルの場合
 		if (firstPath.indexOf(cnst.path.keyDiv) < 0) firstPath = "${firstPath}${cnst.path.keyDiv}${cnst.dflt.handleName}"
-		return (otherPath.empty)? lowers[firstPath] : lowers[firstPath]?.solvePath(otherPath)
+		return (otherPath.empty)? lowers[firstPath] : lowers[firstPath]?.solve(otherPath)
+	}
+	
+	/**
+	 * パスに対応するハンドルあるいはマップの値を返します。<br/>
+	 * パスにアンカーを含まない場合は、{@link #solve(String)}を返します。
+	 * アンカーを含む場合、まずアンカーを除いたパスに相当するハンドルを参照します。
+	 * アンカーを除いたパスが空文字列ならば自ハンドルです。
+	 * アンカーを除いたパスが空文字列でなければ{@link #solve(String)}でハンドルを参照します。
+	 * アンカーが空文字列のときはデフォルトキーとみなします。
+	 * ハンドルのマップからキーと紐づく値を返します。
+	 * @param path パス
+	 * @return パスに対応するハンドルあるいはマップの値（該当するハンドルがなければnull）
+	 */
+	def refer(String path){
+		// パスにアンカーを含まない場合は、{@link #solve(String)}を返します
+		int idx = path.indexOf(cnst.path.anchor)
+		if (idx < 0) return solve(path)
+		// アンカーと、アンカーを含まないパスを取得します
+		String anchor = path.substring(idx + 1)
+		if (anchor.empty) anchor = cnst.dflt.mapKey
+		path = path.substring(0, idx)
+		// パスが示す対象を返します
+		TeaHandle hndl = (path.empty)? this : solve(path)
+		return hndl?.getAt(anchor)
 	}
 	
 	/**

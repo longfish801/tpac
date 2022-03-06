@@ -19,33 +19,14 @@ class TpacRefer {
 	TeaHandle handle
 	/** パス */
 	String path
-	/** アンカー */
-	String anchor = null
 	
 	/**
 	 * インスタンスを生成します。
 	 * @param handle ハンドル
 	 * @param fullpath アンカーを含みうるパス
 	 */
-	static TpacRefer newInstance(TeaHandle handle, String fullpath){
-		TpacRefer refer = new TpacRefer(handle)
-		int anchorIdx = fullpath.indexOf(cnst.scalar.anchor)
-		if (anchorIdx < 0){
-			refer.path = fullpath
-		} else {
-			refer.path = fullpath.substring(0, anchorIdx)
-			refer.anchor = fullpath.substring(anchorIdx + cnst.scalar.anchor.length())
-			if (refer.anchor.empty) refer.anchor = cnst.dflt.mapKey
-		}
-		return refer
-	}
-	
-	/**
-	 * コンストラクタ。
-	 * @param handle ハンドル
-	 */
-	TpacRefer(TeaHandle handle) {
-		this.handle = handle
+	static TpacRefer newInstance(TeaHandle handle, String path){
+		return new TpacRefer(handle: handle, path: path)
 	}
 	
 	/**
@@ -54,7 +35,7 @@ class TpacRefer {
 	 */
 	@Override
 	String toString(){
-		return (anchor == null)? path : "${path}${cnst.path.anchor}${(anchor == cnst.dflt.mapKey)? '' : anchor}"
+		return path
 	}
 	
 	/**
@@ -62,6 +43,6 @@ class TpacRefer {
 	 * @return パスに対応する要素
 	 */
 	def refer(){
-		return (anchor == null)? handle.solvePath(path) : handle.solvePath(path)?.getAt(anchor)
+		return handle.refer(path)
 	}
 }

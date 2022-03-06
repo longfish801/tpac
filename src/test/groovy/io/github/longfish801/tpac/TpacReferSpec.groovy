@@ -34,36 +34,10 @@ class TpacReferSpec extends Specification {
 		TpacRefer refer
 		
 		when:
-		refer = TpacRefer.newInstance(dec, 'some:thing')
-		then:
-		refer.handle == dec
-		refer.path == 'some:thing'
-		refer.anchor == null
-		
-		when: 'アンカー有の場合'
 		refer = TpacRefer.newInstance(dec, 'some:thing#happend')
 		then:
 		refer.handle == dec
-		refer.path == 'some:thing'
-		refer.anchor == 'happend'
-		
-		when: 'アンカー有でデフォルトキーの場合'
-		refer = TpacRefer.newInstance(dec, 'some:thing#')
-		then:
-		refer.handle == dec
-		refer.path == 'some:thing'
-		refer.anchor == cnst.dflt.mapKey
-	}
-	
-	def 'constructor'(){
-		given:
-		TpacRefer refer
-		
-		when:
-		refer = new TpacRefer(dec)
-		then:
-		refer instanceof TpacRefer
-		refer.handle == dec
+		refer.path == 'some:thing#happend'
 	}
 	
 	def 'toString'(){
@@ -74,16 +48,6 @@ class TpacReferSpec extends Specification {
 		refer = TpacRefer.newInstance(dec, 'some:thing')
 		then:
 		refer.toString() == 'some:thing'
-		
-		when: 'アンカー有の場合'
-		refer = TpacRefer.newInstance(dec, 'some:thing#happend')
-		then:
-		refer.toString() == 'some:thing#happend'
-		
-		when: 'アンカー有でデフォルトキーの場合'
-		refer = TpacRefer.newInstance(dec, 'some:thing#')
-		then:
-		refer.toString() == 'some:thing#'
 	}
 	
 	def 'refer'(){
