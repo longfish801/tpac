@@ -88,7 +88,7 @@ trait TeaParty {
 		reader.eachLine { String line, int lineNo ->
 			try {
 				LineType lineType = classifyLine(line)
-				LOG.debug('line[{}, {}, {}]={}', lineNo, branchType, lineType, line)
+				LOG.trace('line[{}, {}, {}]={}', lineNo, branchType, lineType, line)
 				switch (branchType){
 					case BranchType.OUT:
 						branchOut(lineType, line)
