@@ -15,7 +15,6 @@ import spock.lang.Shared
 
 /**
  * TpacPartyクラスのテスト。
- * @version 0.3.00 2020/05/06
  * @author io.github.longfish801
  */
 @Slf4j('LOG')

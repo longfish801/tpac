@@ -2,7 +2,7 @@
 
 ## Overview
 
-Handles documents containing multi-line text.
+Handles documents containing multi-line text.  
 It is useful when you want to manage several short sentences or scripts into a single file.
 
 This is individual development, for self-learning.  
@@ -10,10 +10,10 @@ No support such as troubleshooting, answering inquiries, and so on.
 
 ## Features
 
-* Parse, reference, stringify, and merge tpac documents.
+* Parse, reference, stringify, and merge tpac documents.  
   tpac document is a document written in tpac notation.
 
-* tpac notation is an easy notation for writing multi-line text.
+* Tpac notation is aimed at ease of writing text.  
   You can write text freely, without inserting indentation or escaping.
 * You can use tpac documents as your own DSL.
 
@@ -83,7 +83,8 @@ def server
 try {
 	server = new TpacServer().soak(new File('src/test/resources/sample.tpac'))
 } catch (exc){
-	exc.printStackTrace()
+	println "Failed to soak: message=${exc.message}"
+	throw exc
 }
 
 def thread = server['thread']

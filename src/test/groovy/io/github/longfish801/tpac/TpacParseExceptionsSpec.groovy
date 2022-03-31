@@ -10,7 +10,6 @@ import spock.lang.Specification
 
 /**
  * TpacParseExceptionsクラスのテスト。
- * @version 0.3.00 2020/05/01
  * @author io.github.longfish801
  */
 @Slf4j('LOG')

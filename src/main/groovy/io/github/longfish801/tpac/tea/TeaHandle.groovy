@@ -18,7 +18,6 @@ import java.util.regex.Pattern
  * ハンドルの特性です。<br/>
  * インスタンス生成後はタグ、上位ハンドルを設定してください。<br/>
  * 一部のメソッドで java.lang.NullpointerExceptionが発生する恐れがあります。
- * @version 0.3.09 2021/10/26
  * @author io.github.longfish801
  */
 trait TeaHandle implements Cloneable {

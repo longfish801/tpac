@@ -15,7 +15,6 @@ import spock.lang.Shared
 
 /**
  * TpacMakerクラスのテスト。
- * @version 0.3.09 2021/10/26
  * @author io.github.longfish801
  */
 @Slf4j('LOG')

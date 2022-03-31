@@ -5,7 +5,7 @@
  */
 
 plugins {
-	id 'com.github.monosoul.markdown.page.generator' version '2.1.0'
+	id 'com.github.monosoul.markdown.page.generator' version '2.3.1.1'
 	id 'jacoco'
 }
 
@@ -18,13 +18,14 @@ apply plugin: 'maven-publish'
 
 defaultTasks 'fix'
 group = 'io.github.longfish801'
-version = '0.4.00'
+version = '1.0.00'
 
 // 環境変数からローカルのmavenリポジトリへのパスを取得します
 String mavenPath = System.env['MAVEN_PATH']
 if (mavenPath == null || mavenPath.empty){
 	throw new Exception('Environment variables MAVEN_PATH is required.')
 }
+mavenPath += '/docs'
 
 repositories {
 	mavenCentral()
@@ -32,7 +33,7 @@ repositories {
 }
 
 dependencies {
-	implementation group: 'io.github.longfish801', name: 'gonfig', version: '0.2.00';
+	implementation group: 'io.github.longfish801', name: 'gonfig', version: '1.0.00';
 	implementation group: 'org.apache.commons', name: 'commons-text', version: '1.6'
 	implementation group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.5.10'
 	implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
@@ -56,7 +57,7 @@ groovydoc {
 	[
 		'http://docs.oracle.com/javase/8/docs/api/' : 'java.,javax.,org.xml.',
 		'https://docs.groovy-lang.org/latest/html/api/' : 'groovy.,org.codehaus.groovy.'
-	].each { link(it.key, it.value); }
+	].each { link(it.key, it.value) }
 }
 
 generateHtml {
@@ -77,11 +78,11 @@ publishing {
 
 // サンプルを実行します
 task execSample(type: JavaExec) {
-	main = 'Sample'
+	mainClass = 'Sample'
 	classpath = sourceSets.test.runtimeClasspath
 }
 task execSampleDsl(type: JavaExec) {
-	main = 'SampleDsl'
+	mainClass = 'SampleDsl'
 	classpath = sourceSets.test.runtimeClasspath
 }
 task execSamples(dependsOn: [execSample, execSampleDsl]) { }

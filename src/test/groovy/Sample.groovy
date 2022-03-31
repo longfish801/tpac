@@ -4,7 +4,8 @@ def server
 try {
 	server = new TpacServer().soak(new File('src/test/resources/sample.tpac'))
 } catch (exc){
-	exc.printStackTrace()
+	println "Failed to soak: message=${exc.message}"
+	throw exc
 }
 
 def thread = server['thread']

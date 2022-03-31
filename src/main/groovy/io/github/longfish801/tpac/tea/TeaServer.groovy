@@ -26,7 +26,6 @@ import java.util.regex.Matcher
  * 変更したい場合は {@link #newParty()}を、
  * 宣言のタグに応じて生成器（{@link TeaMaker}）を
  * 変更したい場合は {@link #newMaker(String)}をオーバーライドしてください。
- * @version 0.3.00 2020/05/23
  * @author io.github.longfish801
  */
 trait TeaServer {

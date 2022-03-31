@@ -21,7 +21,6 @@ import org.apache.commons.text.StringEscapeUtils
  * 独自DSLのため実装するときは {@link #newTeaDec(String,String)}、
  * {@link #newTeaHandle(String,String,TeaHandle)}を
  * オーバーライドしてください。
- * @version 0.3.09 2021/10/26
  * @author io.github.longfish801
  */
 trait TeaMaker {

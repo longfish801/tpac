@@ -14,7 +14,7 @@
 
 * tpac文書を解析、参照、文字列化、マージできます。
   tpac文書は tpac記法で記述された文書です。
-* tpac記法は複数行のテキストを記述しやすい記法です。
+* tpac記法はテキストの記述しやすさに配慮した記法です。
   インデントの挿入やエスケープなしに、自由にテキストを記述できます。
 * tpac文書を独自の DSLとして利用することができます。
 
@@ -84,7 +84,8 @@ def server
 try {
 	server = new TpacServer().soak(new File('src/test/resources/sample.tpac'))
 } catch (exc){
-	exc.printStackTrace()
+	println "Failed to soak: message=${exc.message}"
+	throw exc
 }
 
 def thread = server['thread']

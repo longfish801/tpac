@@ -20,12 +20,12 @@
 　このため、たとえば TeaMaker特性を実装し、ハンドルや宣言のインスタンスを生成するメソッドをオーバーライドすることで、独自のクラスをハンドルや宣言のインスタンスとして返すことができます。
 　ある tpac文書のすべてのハンドルや宣言を独自クラスに置き換える必要はありません。基本的には TpacHandleクラス、TpacDecクラスを用い、必要な箇所だけ独自クラスに置き換えることができます。
 
-| 実装対象 | 実装クラス  | 特性       |
-| -----     | -----        | -----       |
+| 実装対象 | 実装クラス | 特性      |
+| -----    | -----      | -----     |
 | ハンドル | TpacHandle | TeaHandle |
 | 宣言     | TpacDec    | TeaDec    |
 | サーバ   | TpacServer | TeaServer |
-| 解析器   | TpacParty   | TeaParty   |
+| 解析器   | TpacParty  | TeaParty  |
 | 生成器   | TpacMaker  | TeaMaker  |
 
 　これらのクラスは io.github.longfish801.tpacパッケージに、特性は io.github.longfish801.tpac.teaパッケージに格納されています。

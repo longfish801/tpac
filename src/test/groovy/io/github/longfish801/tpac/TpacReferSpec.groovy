@@ -13,7 +13,6 @@ import spock.lang.Shared
 
 /**
  * TpacReferクラスのテスト。
- * @version 0.3.00 2020/05/27
  * @author io.github.longfish801
  */
 @Slf4j('LOG')

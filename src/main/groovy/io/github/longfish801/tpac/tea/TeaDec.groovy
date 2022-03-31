@@ -10,7 +10,6 @@ import io.github.longfish801.tpac.tea.TeaServer
 
 /**
  * 宣言の特性です。
- * @version 0.3.00 2020/05/23
  * @author io.github.longfish801
  */
 trait TeaDec extends TeaHandle {

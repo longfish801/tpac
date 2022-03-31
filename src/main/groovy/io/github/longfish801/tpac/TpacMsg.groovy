@@ -9,7 +9,6 @@ import io.github.longfish801.gonfig.Gonfig
 
 /**
  * メッセージを保持します。
- * @version 0.3.00 2020/01/16
  * @author io.github.longfish801
  */
 class TpacMsg implements Gonfig {

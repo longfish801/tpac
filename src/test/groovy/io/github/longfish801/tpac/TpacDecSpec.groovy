@@ -12,7 +12,6 @@ import spock.lang.Shared
 
 /**
  * TpacDecクラスのテスト。
- * @version 0.3.00 2020/05/23
  * @author io.github.longfish801
  */
 @Slf4j('LOG')

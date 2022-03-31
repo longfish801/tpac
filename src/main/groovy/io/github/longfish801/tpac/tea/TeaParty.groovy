@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory
 
 /**
  * tpac記法を解析するための特性です。<br/>
- * @version 0.3.00 2020/05/23
  * @author io.github.longfish801
  */
 trait TeaParty {
