@@ -7,7 +7,6 @@ package io.github.longfish801.tpac
 
 /**
  * tpac文書のGroovy評価値です。
- * @version 0.3.00 2020/06/03
  * @author io.github.longfish801
  */
 class TpacEval {

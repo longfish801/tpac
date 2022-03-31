@@ -9,7 +9,7 @@ attachment2 << scriptHandle
 
 def attachment3 = new TpacDec(tag: 'attachment', name: '3')
 def resultHandle = new TpacHandle(tag: 'result')
-resultHandle._ = [ 'Hello, World!', 'Hello, tpac!' ]
+resultHandle.dflt = [ 'Hello, World!', 'Hello, tpac!' ]
 attachment3 << resultHandle
 
 def mail2 = new Mail('2')
@@ -32,7 +32,7 @@ String script = '''\
 	'''.stripIndent()
 
 def server = new MailServer().soak(script)
-def mail1 = server.solvePath('/thread/mail:1')
+def mail1 = server.solve('/thread/mail:1')
 assert mail1 instanceof Mail
 mail1.reply(mail2)
 mail1.reply(mail3)
@@ -68,12 +68,12 @@ class Mail implements TeaHandle {
 	@Override
 	void validate(){
 		if (getAt('from') == null) throw new TpacSemanticException('Key "from" must be specified')
-		if (getAt('_') == null) throw new TpacSemanticException('Message must be specified')
+		if (getAt('dflt') == null) throw new TpacSemanticException('Message must be specified')
 	}
 	
 	void appendMessage(String line){
-		if (this.dflt == null) this._ = []
-		this._ << line
+		if (this.dflt == null) this.dflt = []
+		this.dflt << line
 	}
 	
 	void reply(Mail mail){

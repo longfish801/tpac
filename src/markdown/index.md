@@ -14,7 +14,7 @@
 
 * tpac文書を解析、参照、文字列化、マージできます。
   tpac文書は tpac記法で記述された文書です。
-* tpac記法は複数行のテキストを記述しやすい記法です。
+* tpac記法はテキストの記述しやすさに配慮した記法です。
   インデントの挿入やエスケープなしに、自由にテキストを記述できます。
 * tpac文書を独自の DSLとして利用することができます。
 
@@ -84,7 +84,8 @@ def server
 try {
 	server = new TpacServer().soak(new File('src/test/resources/sample.tpac'))
 } catch (exc){
-	exc.printStackTrace()
+	println "Failed to soak: message=${exc.message}"
+	throw exc
 }
 
 def thread = server['thread']
@@ -92,9 +93,9 @@ assert thread.key == 'thread'
 assert thread.lowers['mail:1'].from == 'Lucy'
 assert thread.lowers['mail:1'].dflt == [ 'Hi everyone.', 'Any good scripts?' ]
 assert thread.lowers['mail:1'].lowers['mail:2'].comments == [ 'Reply message for 1' ]
-def mail2 = thread.solvePath('mail:1/mail:2')
+def mail2 = thread.solve('mail:1/mail:2')
 assert mail2.attachment.refer().hello == [ "println 'Hello, World!'", "println 'Hello, tpac!'" ]
-def mail3 = server.solvePath('/thread/mail:1/mail:3')
+def mail3 = server.solve('/thread/mail:1/mail:3')
 assert mail3.from == 'Lucy'
 assert mail3.attachment.refer() == [ 'Hello, World!', 'Hello, tpac!' ]
 assert server.findAll(/^attachment:\d+$/).collect { it.key } == [ 'attachment:2', 'attachment:3' ]
@@ -131,7 +132,7 @@ dependencies {
 ## 改版履歴
 
 0.3.01
-: solvePathメソッドで自ハンドルと一致した場合の分岐は不要なため削除しました。
+: solveメソッドで自ハンドルと一致した場合の分岐は不要なため削除しました。
 
 0.3.02
 : TeaHandleにgetDfltメソッドを追加しました。
@@ -147,3 +148,26 @@ dependencies {
 
 0.3.06
 : キーの妥当性検査や初期化のためのメソッドを見直しました。
+
+0.3.07
+: データ型がnullのときも検証できるよう修正しました。
+
+0.3.08
+: デフォルト値が未設定のときでもキーが設定される不具合を改修しました。
+
+0.3.09
+: スカラー値に改行コードが含まれていても出力時にエスケープされない不具合を改修しました。
+: ハンドルの識別キーに重複があってもエラーとならない不具合を改修しました。
+
+0.3.10
+: ドキュメントはmavenリポジトリに出力するよう修正しました。
+
+0.3.11
+: 同じ宣言が複数あるときはマージするよう修正しました。
+
+0.3.12
+: デフォルトキーの実体を文字列"dflt"に変更しました。
+
+0.3.13
+: TeaHandleクラスのsolvePathメソッドをsolveメソッドに変更しました。
+: TeaHandleクラスにreferメソッドを追加しました。

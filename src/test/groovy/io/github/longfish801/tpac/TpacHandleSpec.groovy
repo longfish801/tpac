@@ -8,13 +8,13 @@ package io.github.longfish801.tpac
 import groovy.util.logging.Slf4j
 import io.github.longfish801.tpac.TpacConst as cnst
 import io.github.longfish801.tpac.TpacMsg as msgs
+import io.github.longfish801.tpac.tea.TeaHandle
 import java.util.regex.Pattern
 import spock.lang.Specification
 import spock.lang.Unroll
 
 /**
  * TpacHandleクラスのテスト。
- * @version 0.3.06 2020/09/10
  * @author io.github.longfish801
  */
 @Slf4j('LOG')
@@ -46,7 +46,7 @@ class TpacHandleSpec extends Specification {
 		when: '名前を省略した場合、名前として半角アンダーバーを用います'
 		handle = new TpacHandle(tag: 'some')
 		then:
-		handle.keyNatural == 'some:_'
+		handle.keyNatural == 'some:dflt'
 	}
 	
 	def 'getDec'(){
@@ -83,7 +83,7 @@ class TpacHandleSpec extends Specification {
 		when:
 		handle << lower
 		then:
-		handle.lowers['lower:_'] == lower
+		handle.lowers['lower:dflt'] == lower
 		lower.upper == handle
 	}
 	
@@ -109,17 +109,6 @@ class TpacHandleSpec extends Specification {
 		handle['boo'] == 'foo'
 	}
 	
-	def 'getDflt'(){
-		given:
-		TpacHandle handle
-		
-		when:
-		handle = new TpacHandle(tag: 'some', name: 'handle')
-		handle.setAt(cnst.dflt.mapKey, 'foo')
-		then:
-		handle.dflt == 'foo'
-	}
-	
 	def 'getPath'(){
 		given:
 		TpacDec dec
@@ -141,7 +130,7 @@ class TpacHandleSpec extends Specification {
 	}
 	
 	@Unroll
-	def 'solvePath'(){
+	def 'solve'(){
 		given:
 		TpacServer server = new TpacServer()
 		TpacDec dec = new TpacDec(tag: 'some', name: 'dec')
@@ -149,36 +138,80 @@ class TpacHandleSpec extends Specification {
 		TpacHandle lower = new TpacHandle(tag: 'some', name: 'lower')
 		TpacHandle lower2 = new TpacHandle(tag: 'some')
 		TpacHandle lowerlower = new TpacHandle(tag: 'some', name: 'lowerlower')
+		TpacHandle handle2 = new TpacHandle(tag: 'some', name: 'handle2')
+		TpacHandle lower3 = new TpacHandle(tag: 'some', name: 'lower3')
 		server << dec
 		dec << handle
 		handle << lower
 		handle << lower2
 		lower << lowerlower
+		dec << handle2
+		handle2 << lower3
 		
 		expect:
-		handle.solvePath(path).path == expect
+		handle.solve(path).path == expect
 		
 		where:
-		path						|| expect
-		'/some:dec/some:handle'		|| '/some:dec/some:handle'
+		path							|| expect
+		'/some:dec/some:handle'			|| '/some:dec/some:handle'
 		'..'							|| '/some:dec'
 		'../some:handle'				|| '/some:dec/some:handle'
+		'../some:handle/some:lower'		|| '/some:dec/some:handle/some:lower'
+		'../some:handle2/some:lower3'	|| '/some:dec/some:handle2/some:lower3'
+		'../some:handle2/..'			|| '/some:dec'
 		'some:lower'					|| '/some:dec/some:handle/some:lower'
-		'some'						|| '/some:dec/some:handle/some'
-		'some:_'						|| '/some:dec/some:handle/some'
+		'some'							|| '/some:dec/some:handle/some'
+		'some:dflt'						|| '/some:dec/some:handle/some'
 		'some:lower/some:lowerlower'	|| '/some:dec/some:handle/some:lower/some:lowerlower'
 	}
 	
-	def 'solvePath - exception'(){
+	def 'solve - exception'(){
 		given:
 		TpacHandle handle = new TpacHandle(tag: 'some', name: 'handle')
 		TpacHandlingException exc
 		
 		when:
-		handle.solvePath('#')
+		handle.solve('#')
 		then:
 		exc = thrown(TpacHandlingException)
 		exc.message == String.format(msgs.exc.invalidpath, '#')
+	}
+	
+	@Unroll
+	def 'refer'(){
+		given:
+		TpacServer server = new TpacServer()
+		TpacDec dec = new TpacDec(tag: 'some', name: 'dec')
+		TpacHandle handle = new TpacHandle(tag: 'some', name: 'handle')
+		TpacHandle lower = new TpacHandle(tag: 'some', name: 'lower')
+		TpacHandle lower2 = new TpacHandle(tag: 'some')
+		server << dec
+		dec << handle
+		handle << lower
+		handle << lower2
+		lower2.dflt = 'lower2dflt'
+		lower2.somekey = 'lower2somekey'
+		handle.dflt = 'handleDflt'
+		handle.somekey = 'handleSomekey'
+		Closure getRefered = {
+			def refered = handle.refer(path)
+			return (refered instanceof TeaHandle)? refered.path : refered
+		}
+		
+		expect:
+		getRefered.call(path) == expect
+		
+		where:
+		path						|| expect
+		'some:lower'				|| '/some:dec/some:handle/some:lower'
+		'some#somekey'				|| 'lower2somekey'
+		'some#'						|| 'lower2dflt'
+		'#somekey'					|| 'handleSomekey'
+		'#'							|| 'handleDflt'
+		'..'						|| '/some:dec'
+		'../some:handle'			|| '/some:dec/some:handle'
+		'../some:handle#somekey'	|| 'handleSomekey'
+		'../some:handle#'			|| 'handleDflt'
 	}
 	
 	def 'findAll'(){
@@ -190,8 +223,8 @@ class TpacHandleSpec extends Specification {
 		handle << lower2
 		List list
 		
-		when: 'タグが someで、名前が省略されていない下位ハンドルを取得します'
-		list = handle.findAll(/^some:[^_]+$/)
+		when: 'dflt以外の下位ハンドルを取得します'
+		list = handle.findAll { it != 'some:dflt' }
 		then:
 		list.size() == 1
 		list.collect { it.key } == [ 'some:lower2' ]
@@ -210,24 +243,50 @@ class TpacHandleSpec extends Specification {
 	
 	def 'validateKeys'(){
 		given:
-		TpacHandle handle = new TpacHandle(tag: 'some', name: 'handle')
+		TpacHandle handle
 		Map conds
+		
+		when: '必須チェックをしたい場合はキー「required」にtrueを指定してください'
+		conds = [ 'boo': [ 'required': true ] ]
+		handle = new TpacHandle(tag: 'some', name: 'handle')
+		handle.boo = 'foo'
+		handle.validateKeys(conds)
+		then:
+		handle.boo == 'foo'
 		
 		when: 'キーに値が指定されていなければデフォルト値を格納します'
 		conds = [ 'boo': [ 'dflt': 'hello' ] ]
+		handle = new TpacHandle(tag: 'some', name: 'handle')
 		handle.validateKeys(conds)
 		then:
 		handle.boo == 'hello'
+		
+		when: 'クラスのチェックをしたい場合はキー「types」には設定可能な値のクラスをリストで指定してください'
+		conds = [ 'boo': [ 'types': [ Integer, null ] ] ]
+		handle = new TpacHandle(tag: 'some', name: 'handle')
+		handle.boo = 3
+		handle.validateKeys(conds)
+		then:
+		handle.boo == 3
+		
+		when: 'クラスのチェックをしたい場合はキー「types」には設定可能な値のクラスをリストで指定してください'
+		conds = [ 'boo': [ 'types': [ Integer, null ] ] ]
+		handle = new TpacHandle(tag: 'some', name: 'handle')
+		handle.boo = null
+		handle.validateKeys(conds)
+		then:
+		handle.boo == null
 	}
 	
 	def 'validateKeys - exception'(){
 		given:
-		TpacHandle handle = new TpacHandle(tag: 'some', name: 'handle')
+		TpacHandle handle
 		Map conds
 		TpacSemanticException exc
 		
 		when: 'キーに値が指定されていなければ例外を投げます'
 		conds = [ 'boo': [ 'required': true ] ]
+		handle = new TpacHandle(tag: 'some', name: 'handle')
 		handle.validateKeys(conds)
 		then:
 		exc = thrown(TpacSemanticException)
@@ -235,6 +294,7 @@ class TpacHandleSpec extends Specification {
 		
 		when: '値がリストにないクラスであれば例外を投げます'
 		conds = [ 'boo': [ 'types': [ Integer ] ] ]
+		handle = new TpacHandle(tag: 'some', name: 'handle')
 		handle.boo = 'hello'
 		handle.validateKeys(conds)
 		then:
@@ -277,7 +337,7 @@ class TpacHandleSpec extends Specification {
 		handle.comments << 'comment 1'
 		handle.comments << 'comment 2'
 		handle.comments << 'comment 3'
-		handle['_'] = [ 'default value1', 'default value2' ]
+		handle['dflt'] = [ 'default value1', 'default value2' ]
 		handle['key1'] = 'val1'
 		handle['key2'] = [ 'val2', 'val3' ]
 		result = getString(handle)
@@ -375,7 +435,7 @@ class TpacHandleSpec extends Specification {
 		
 		where:
 		value		|| expect
-		null		|| 'null'
+		null			|| 'null'
 		true		|| 'true'
 		false		|| 'false'
 		-1			|| '-1'
@@ -383,16 +443,30 @@ class TpacHandleSpec extends Specification {
 		TpacRefer.newInstance(new TpacHandle(tag: 'handle'), '..')	|| '@..'
 		Pattern.compile(/.+/)	|| ':.+'
 		new TpacEval('3+2')	|| '=3+2'
+		"${'abc'}d${System.lineSeparator()}"	|| '_abcd\\r\\n'
 		'null'		|| '_null'
 		'true'		|| '_true'
 		'false'		|| '_false'
 		'@..'		|| '_@..'
 		':.+'		|| '_:.+'
 		'=3+2'		|| '_=3+2'
-		'_hello'	|| '__hello'
-		"a\nb"		|| '_a\\nb'
+		'_hello'		|| '__hello'
+		'\n'			|| '_\\n'
+		'\r'			|| '_\\r'
+		'\f'			|| '_\\f'
+		'\b'			|| '_\\b'
+		'\t'			|| '_\\t'
+		"'"			|| "_\\'"
+		'"'			|| '_\\"'
+		'あ\nん'		|| '_あ\\nん'
+		'\fい\r'		|| '_\\fい\\r'
+		"'Hello'"		|| "_\\'Hello\\'"
+		'山"い\t川"'	|| '_山\\"い\\t川\\"'
+		'\\n'		|| '_\\\\n'
+		'\\\n'		|| '_\\\\\\n'
 		''			|| '_'
 		'abc'		|| 'abc'
+		'あいう'		|| 'あいう'
 	}
 	
 	def 'formatScalar - exception'(){
@@ -421,7 +495,7 @@ class TpacHandleSpec extends Specification {
 		cloned = handle.clone()
 		then:
 		cloned.upper.key == dec.key
-		cloned.lowers['lower:_'].key == lower.key
+		cloned.lowers['lower:dflt'].key == lower.key
 		cloned.comments[0] == 'Comment'
 		cloned.KEY == 'VAL'
 	}

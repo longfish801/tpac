@@ -20,12 +20,12 @@
 　このため、たとえば TeaMaker特性を実装し、ハンドルや宣言のインスタンスを生成するメソッドをオーバーライドすることで、独自のクラスをハンドルや宣言のインスタンスとして返すことができます。
 　ある tpac文書のすべてのハンドルや宣言を独自クラスに置き換える必要はありません。基本的には TpacHandleクラス、TpacDecクラスを用い、必要な箇所だけ独自クラスに置き換えることができます。
 
-| 実装対象 | 実装クラス  | 特性       |
-| -----     | -----        | -----       |
+| 実装対象 | 実装クラス | 特性      |
+| -----    | -----      | -----     |
 | ハンドル | TpacHandle | TeaHandle |
 | 宣言     | TpacDec    | TeaDec    |
 | サーバ   | TpacServer | TeaServer |
-| 解析器   | TpacParty   | TeaParty   |
+| 解析器   | TpacParty  | TeaParty  |
 | 生成器   | TpacMaker  | TeaMaker  |
 
 　これらのクラスは io.github.longfish801.tpacパッケージに、特性は io.github.longfish801.tpac.teaパッケージに格納されています。
@@ -47,7 +47,7 @@ attachment2 << scriptHandle
 
 def attachment3 = new TpacDec(tag: 'attachment', name: '3')
 def resultHandle = new TpacHandle(tag: 'result')
-resultHandle._ = [ 'Hello, World!', 'Hello, tpac!' ]
+resultHandle.dflt = [ 'Hello, World!', 'Hello, tpac!' ]
 attachment3 << resultHandle
 
 def mail2 = new Mail('2')
@@ -70,7 +70,7 @@ String script = '''\
 	'''.stripIndent()
 
 def server = new MailServer().soak(script)
-def mail1 = server.solvePath('/thread/mail:1')
+def mail1 = server.solve('/thread/mail:1')
 assert mail1 instanceof Mail
 mail1.reply(mail2)
 mail1.reply(mail3)
@@ -106,12 +106,12 @@ class Mail implements TeaHandle {
 	@Override
 	void validate(){
 		if (getAt('from') == null) throw new TpacSemanticException('Key "from" must be specified')
-		if (getAt('_') == null) throw new TpacSemanticException('Message must be specified')
+		if (getAt('dflt') == null) throw new TpacSemanticException('Message must be specified')
 	}
 	
 	void appendMessage(String line){
-		if (this.dflt == null) this._ = []
-		this._ << line
+		if (this.dflt == null) this.dflt = []
+		this.dflt << line
 	}
 	
 	void reply(Mail mail){
@@ -126,4 +126,3 @@ class Mail implements TeaHandle {
 ```
 
 　このサンプルコードは build.gradle内の execSampleDslタスクで実行しています。
-

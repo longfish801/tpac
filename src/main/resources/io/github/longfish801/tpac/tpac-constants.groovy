@@ -43,14 +43,8 @@ line {
 
 // デフォルト値
 dflt {
-	handleName = '_'
-	mapKey = '_'
-}
-
-// 省略時の値
-omit {
-	handleName = ''
-	mapKey = ''
+	handleName = 'dflt'
+	mapKey = 'dflt'
 }
 
 // スカラー

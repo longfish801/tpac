@@ -1,8 +1,8 @@
-﻿# tpac
+# tpac
 
 ## Overview
 
-Handles documents containing multi-line text.
+Handles documents containing multi-line text.  
 It is useful when you want to manage several short sentences or scripts into a single file.
 
 This is individual development, for self-learning.  
@@ -10,10 +10,10 @@ No support such as troubleshooting, answering inquiries, and so on.
 
 ## Features
 
-* Parse, reference, stringify, and merge tpac documents.
+* Parse, reference, stringify, and merge tpac documents.  
   tpac document is a document written in tpac notation.
 
-* tpac notation is an easy notation for writing multi-line text.
+* Tpac notation is aimed at ease of writing text.  
   You can write text freely, without inserting indentation or escaping.
 * You can use tpac documents as your own DSL.
 
@@ -83,7 +83,8 @@ def server
 try {
 	server = new TpacServer().soak(new File('src/test/resources/sample.tpac'))
 } catch (exc){
-	exc.printStackTrace()
+	println "Failed to soak: message=${exc.message}"
+	throw exc
 }
 
 def thread = server['thread']
@@ -91,9 +92,9 @@ assert thread.key == 'thread'
 assert thread.lowers['mail:1'].from == 'Lucy'
 assert thread.lowers['mail:1'].dflt == [ 'Hi everyone.', 'Any good scripts?' ]
 assert thread.lowers['mail:1'].lowers['mail:2'].comments == [ 'Reply message for 1' ]
-def mail2 = thread.solvePath('mail:1/mail:2')
+def mail2 = thread.solve('mail:1/mail:2')
 assert mail2.attachment.refer().hello == [ "println 'Hello, World!'", "println 'Hello, tpac!'" ]
-def mail3 = server.solvePath('/thread/mail:1/mail:3')
+def mail3 = server.solve('/thread/mail:1/mail:3')
 assert mail3.from == 'Lucy'
 assert mail3.attachment.refer() == [ 'Hello, World!', 'Hello, tpac!' ]
 assert server.findAll(/^attachment:\d+$/).collect { it.key } == [ 'attachment:2', 'attachment:3' ]
@@ -103,5 +104,5 @@ This sample code is executed in the execSample task, see build.gradle.
 
 ## Next Step
 
-Please see the [documents](https://longfish801.github.io/tpac/) for more detail.
+Please see the [documents](https://longfish801.github.io/maven/tpac/) for more detail.
 

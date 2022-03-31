@@ -13,16 +13,16 @@ import io.github.longfish801.tpac.TpacRefer
 import io.github.longfish801.tpac.TpacSemanticException
 import java.util.regex.Matcher
 import java.util.regex.Pattern
-import org.apache.commons.text.StringEscapeUtils
 
 /**
  * ハンドルの特性です。<br/>
  * インスタンス生成後はタグ、上位ハンドルを設定してください。<br/>
  * 一部のメソッドで java.lang.NullpointerExceptionが発生する恐れがあります。
- * @version 0.3.06 2020/09/10
  * @author io.github.longfish801
  */
 trait TeaHandle implements Cloneable {
+	/** スカラー値でエスケープの対象となる文字の正規表現 */
+	static Pattern escPttrn = Pattern.compile(/[\n\r\f\u0008\t\'\"\\]/, Pattern.MULTILINE)
 	/** タグ */
 	String tag
 	/** 名前 */
@@ -49,8 +49,7 @@ trait TeaHandle implements Cloneable {
 	
 	/**
 	 * 未加工の識別キーを返します。<br/>
-	 * 識別キーはタグ名と名前を半角コロンで連結した文字列です。<br/>
-	 * 名前を省略した場合、名前として半角アンダーバーを用います。
+	 * 識別キーはタグ名と名前を半角コロンで連結した文字列です。
 	 * @return 未加工の識別キー
 	 */
 	String getKeyNatural(){
@@ -125,14 +124,6 @@ trait TeaHandle implements Cloneable {
 	}
 	
 	/**
-	 * マップからデフォルトキーに対応する値を参照します。
-	 * @return デフォルトキーに対応する値
-	 */
-	def getDflt(){
-		return getAt(cnst.dflt.mapKey)
-	}
-	
-	/**
 	 * このハンドルの絶対パスを返します。
 	 * @return 絶対パス
 	 */
@@ -160,9 +151,9 @@ trait TeaHandle implements Cloneable {
 	 * @return パスに対応するハンドル（該当するハンドルがなければnull）
 	 * @exception TpacHandlingException 統語的にありえないパスです
 	 */
-	TeaHandle solvePath(String path){
+	TeaHandle solve(String path){
 		// 絶対パスの場合は宣言に解決を依頼します
-		if (path.startsWith(cnst.path.level)) return dec.solvePath(path)
+		if (path.startsWith(cnst.path.level)) return dec.solve(path)
 		// パス区切り文字で分割した先頭の要素を解決します
 		if (cnst.path.handles.every { !(path ==~ it) }){
 			throw new TpacHandlingException(String.format(msgs.exc.invalidpath, path))
@@ -171,11 +162,35 @@ trait TeaHandle implements Cloneable {
 		String firstPath = matcher.group(1)
 		String otherPath = (matcher.groupCount() >= 2)? matcher.group(2) : ''
 		if (firstPath == cnst.path.upper){	// 上位のパスの場合
-			return (otherPath.empty)? upper : upper?.solvePath(otherPath)
+			return (otherPath.empty)? upper : upper?.solve(otherPath)
 		}
 		// 下位ハンドルの場合
 		if (firstPath.indexOf(cnst.path.keyDiv) < 0) firstPath = "${firstPath}${cnst.path.keyDiv}${cnst.dflt.handleName}"
-		return (otherPath.empty)? lowers[firstPath] : lowers[firstPath]?.solvePath(otherPath)
+		return (otherPath.empty)? lowers[firstPath] : lowers[firstPath]?.solve(otherPath)
+	}
+	
+	/**
+	 * パスに対応するハンドルあるいはマップの値を返します。<br/>
+	 * パスにアンカーを含まない場合は、{@link #solve(String)}を返します。
+	 * アンカーを含む場合、まずアンカーを除いたパスに相当するハンドルを参照します。
+	 * アンカーを除いたパスが空文字列ならば自ハンドルです。
+	 * アンカーを除いたパスが空文字列でなければ{@link #solve(String)}でハンドルを参照します。
+	 * アンカーが空文字列のときはデフォルトキーとみなします。
+	 * ハンドルのマップからキーと紐づく値を返します。
+	 * @param path パス
+	 * @return パスに対応するハンドルあるいはマップの値（該当するハンドルがなければnull）
+	 */
+	def refer(String path){
+		// パスにアンカーを含まない場合は、{@link #solve(String)}を返します
+		int idx = path.indexOf(cnst.path.anchor)
+		if (idx < 0) return solve(path)
+		// アンカーと、アンカーを含まないパスを取得します
+		String anchor = path.substring(idx + 1)
+		if (anchor.empty) anchor = cnst.dflt.mapKey
+		path = path.substring(0, idx)
+		// パスが示す対象を返します
+		TeaHandle hndl = (path.empty)? this : solve(path)
+		return hndl?.getAt(anchor)
 	}
 	
 	/**
@@ -187,6 +202,19 @@ trait TeaHandle implements Cloneable {
 	 */
 	List<TeaHandle> findAll(String regex){
 		return lowers.values().findAll { it.keyNatural =~ regex }
+	}
+	
+	/**
+	 * クロージャによって対象と判定した下位ハンドルのリストを取得します。<br/>
+	 * クロージャには引数として未加工の識別キーを渡します。<br/>
+	 * 戻り値に含めるか否か判定を返してください。<br/>
+	 * 直下の下位ハンドルのみ探します。<br/>
+	 * 再帰的にさらに下位まで探すわけではないことに注意してください。
+	 * @param clos 未加工の識別キーから対象か否か判定を返すクロージャ
+	 * @return クロージャが対象と判定した下位ハンドルのリスト（みつからない場合は空リスト）
+	 */
+	List<TeaHandle> findAll(Closure clos){
+		return lowers.values().findAll { clos.call(it.keyNatural) }
 	}
 	
 	/**
@@ -212,20 +240,20 @@ trait TeaHandle implements Cloneable {
 	 */
 	void validateKeys(Map conds){
 		conds.each { String condKey, Map condMap ->
-			if (!map.containsKey(condKey)){
+			if (map.containsKey(condKey)){
+				// 指定可能なクラスでなければ例外を投げます
+				if (condMap.types instanceof List){
+					if (condMap.types.every { !(it?.isInstance(map.get(condKey)) || (it == null && map.get(condKey) == null)) }){
+						throw new TpacSemanticException(String.format(msgs.validate.invalidType, condKey, map.get(condKey)?.class?.name))
+					}
+				}
+			} else {
 				// 必須項目の値が指定されていない場合は例外を投げます
 				if (condMap.required == true){
 					throw new TpacSemanticException(String.format(msgs.validate.unspecifiedValue, condKey))
 				}
 				// デフォルト値を格納します
-				if (condMap.dflt != null) map.put(condKey, condMap.dflt)
-			} else {
-				// 指定可能なクラスでなければ例外を投げます
-				if (condMap.types != null){
-					if (condMap.types.every { !it.isInstance(map.get(condKey)) }){
-						throw new TpacSemanticException(String.format(msgs.validate.invalidType, condKey, map.get(condKey).class.name))
-					}
-				}
+				if (condMap.containsKey('dflt')) map.put(condKey, condMap.dflt)
 			}
 		}
 	}
@@ -403,6 +431,8 @@ trait TeaHandle implements Cloneable {
 			case TpacEval:
 				raw = "${cnst.scalar.eval}${value.expression}"
 				break
+			case GString:
+				value = value.toString()
 			case String:
 				switch (value){
 					case cnst.scalar.kwdNull:
@@ -414,13 +444,12 @@ trait TeaHandle implements Cloneable {
 					case {it.startsWith(cnst.scalar.rex)}:
 					case {it.startsWith(cnst.scalar.eval)}:
 					case {it.startsWith(cnst.scalar.str)}:
-					case {it ==~ /.*[\r\n]..*/}:
+					case {escPttrn.matcher(it).find() }:
 					case {it.empty}:
-						value = StringEscapeUtils.escapeJava(value)
-						raw = "${cnst.scalar.str}${value}"
+						raw = "${cnst.scalar.str}${escapeJavaExceptMultiByteString(value)}"
 						break
 					default:
-						raw = value.toString()
+						raw = value
 						break
 				}
 				break
@@ -428,6 +457,26 @@ trait TeaHandle implements Cloneable {
 				throw new TpacHandlingException(String.format(msgs.exc.noSupportScalarString, value, value.class.name))
 		}
 		return raw
+	}
+	
+	/**
+	 * Javaにおけるエスケープシーケンスの対象となる文字（ただしマルチバイト文字を除く）をエスケープして返します。<br/>
+	 * たとえば改行コード(\n)を文字列「\n」に置換します。<br/>
+	 * Apache Commons Textの StringEscapeUtilsクラスのescapeJavaメソッドはマルチバイト文字も
+	 * エスケープ対象となるため、マルチバイト文字を除いてエスケープする処理を作成しました。
+	 * @param target 対象文字列
+	 * @return エスケープ後の文字列
+	 */
+	static String escapeJavaExceptMultiByteString(String target){
+		target = target.replaceAll('\\\\', '\\\\\\\\')
+		target = target.replaceAll(/\n/, /\\n/)
+		target = target.replaceAll(/\r/, /\\r/)
+		target = target.replaceAll(/\f/, /\\f/)
+		target = target.replaceAll(/\u0008/, /\\b/)
+		target = target.replaceAll(/\t/, /\\t/)
+		target = target.replaceAll(/\'/, /\\'/)
+		target = target.replaceAll(/\"/, /\\"/)
+		return target
 	}
 	
 	/**

@@ -15,7 +15,6 @@ import spock.lang.Shared
 
 /**
  * TpacPartyクラスのテスト。
- * @version 0.3.00 2020/05/06
  * @author io.github.longfish801
  */
 @Slf4j('LOG')
@@ -99,11 +98,11 @@ class TpacPartySpec extends Specification implements GropedResource {
 		then:
 		decs.size() == 1
 		decs[0].key == 'tpac'
-		decs[0].solvePath('handle').key == 'handle'
-		decs[0].solvePath('handle').dflt == [ 'hello tpac!' ]
-		decs[0].solvePath('handle').getAt('key1') == 'hello'
-		decs[0].solvePath('handle').getAt('key2') == [ 'hello2' ]
-		decs[0].solvePath('handle:some2').key == 'handle:some2'
+		decs[0].solve('handle').key == 'handle'
+		decs[0].solve('handle').dflt == [ 'hello tpac!' ]
+		decs[0].solve('handle').getAt('key1') == 'hello'
+		decs[0].solve('handle').getAt('key2') == [ 'hello2' ]
+		decs[0].solve('handle:some2').key == 'handle:some2'
 	}
 	
 	def 'classifyLine'(){
@@ -129,11 +128,11 @@ class TpacPartySpec extends Specification implements GropedResource {
 		decs = party.parse(source)
 		then:
 		decs[0].key == 'dec'
-		decs[0].solvePath('handle').key == 'handle'
-		decs[0].solvePath('handle').comments == [ 'comment' ]
-		decs[0].solvePath('handle').getAt('key1') == 'val1'
-		decs[0].solvePath('handle').dflt == [ 'text', '#invalid' ]
-		decs[0].solvePath('handle').getAt('key2') == [ 'val2' ]
+		decs[0].solve('handle').key == 'handle'
+		decs[0].solve('handle').comments == [ 'comment' ]
+		decs[0].solve('handle').getAt('key1') == 'val1'
+		decs[0].solve('handle').dflt == [ 'text', '#invalid' ]
+		decs[0].solve('handle').getAt('key2') == [ 'val2' ]
 	}
 	
 	def 'branchOut'(){
@@ -192,7 +191,7 @@ class TpacPartySpec extends Specification implements GropedResource {
 		decs = party.parse(source)
 		then:
 		decs[0].key == 'dec'
-		decs[0].solvePath('handle').key == 'handle'
+		decs[0].solve('handle').key == 'handle'
 		
 		when: '宣言／ハンドル開始行からコメントまでの間にハンドル終端が現れたとき'
 		source = '''\
@@ -314,7 +313,7 @@ class TpacPartySpec extends Specification implements GropedResource {
 		then:
 		decs[0].key == 'dec'
 		decs[0].getAt('key') == 'hello'
-		decs[0].solvePath('handle').key == 'handle'
+		decs[0].solve('handle').key == 'handle'
 		
 		when: '宣言／ハンドルのコメントより後にハンドル終端が現れたとき'
 		source = '''\
@@ -524,7 +523,7 @@ class TpacPartySpec extends Specification implements GropedResource {
 		decs = party.parse(source)
 		then:
 		decs[0].key == 'dec'
-		decs[0].solvePath('handle').key == 'handle'
+		decs[0].solve('handle').key == 'handle'
 	}
 	
 	def 'leafDec'(){
@@ -566,18 +565,6 @@ class TpacPartySpec extends Specification implements GropedResource {
 		exc.message == msgs.exc.parseError
 		exc.errors[0].exc instanceof TpacSyntaxException
 		exc.errors[0].exc.message == msgs.exc.invalidDec
-		
-		when:
-		source = '''\
-			#! dec:some
-			#! dec:some
-			'''.stripIndent()
-		party.parse(source)
-		then:
-		exc = thrown(TpacParseExceptions)
-		exc.message == msgs.exc.parseError
-		exc.errors[0].exc instanceof TpacSyntaxException
-		exc.errors[0].exc.message == String.format(msgs.exc.duplicateIdKey, 'dec:some')
 	}
 	
 	def 'leafHandle'(){
@@ -592,8 +579,8 @@ class TpacPartySpec extends Specification implements GropedResource {
 			'''.stripIndent()
 		decs = party.parse(source)
 		then:
-		decs[0].solvePath('handle').key == 'handle'
-		decs[0].solvePath('handle').dflt == null
+		decs[0].solve('handle').key == 'handle'
+		decs[0].solve('handle').dflt == null
 		
 		when: 'ハンドル開始行にスカラー値あり'
 		source = '''\
@@ -602,8 +589,8 @@ class TpacPartySpec extends Specification implements GropedResource {
 			'''.stripIndent()
 		decs = party.parse(source)
 		then:
-		decs[0].solvePath('handle').key == 'handle'
-		decs[0].solvePath('handle').dflt == 'hello'
+		decs[0].solve('handle').key == 'handle'
+		decs[0].solve('handle').dflt == 'hello'
 		
 		when: 'ハンドル開始行が省略記法でスカラー値なし'
 		source = '''\
@@ -612,8 +599,8 @@ class TpacPartySpec extends Specification implements GropedResource {
 			'''.stripIndent()
 		decs = party.parse(source)
 		then:
-		decs[0].solvePath('handle').key == 'handle'
-		decs[0].solvePath('handle').dflt == null
+		decs[0].solve('handle').key == 'handle'
+		decs[0].solve('handle').dflt == null
 		
 		when: 'ハンドル開始行が省略記法でスカラー値あり'
 		source = '''\
@@ -622,8 +609,8 @@ class TpacPartySpec extends Specification implements GropedResource {
 			'''.stripIndent()
 		decs = party.parse(source)
 		then:
-		decs[0].solvePath('handle').key == 'handle'
-		decs[0].solvePath('handle').dflt == 'hello'
+		decs[0].solve('handle').key == 'handle'
+		decs[0].solve('handle').dflt == 'hello'
 	}
 	
 	def 'leafHandle - exception'(){

@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory
 
 /**
  * tpac記法を解析するための特性です。<br/>
- * @version 0.3.00 2020/05/23
  * @author io.github.longfish801
  */
 trait TeaParty {
@@ -88,7 +87,7 @@ trait TeaParty {
 		reader.eachLine { String line, int lineNo ->
 			try {
 				LineType lineType = classifyLine(line)
-				LOG.debug('line[{}, {}, {}]={}', lineNo, branchType, lineType, line)
+				LOG.trace('line[{}, {}, {}]={}', lineNo, branchType, lineType, line)
 				switch (branchType){
 					case BranchType.OUT:
 						branchOut(lineType, line)
@@ -318,7 +317,6 @@ trait TeaParty {
 	 * 宣言を解析します。
 	 * @param line 解析対象行
 	 * @exception TpacSyntaxException 統語的にありえない宣言です。
-	 * @exception TpacSyntaxException 識別キーが他の宣言と重複しています。
 	 */
 	private void leafDec(String line){
 		// 宣言から識別キー、スカラー値を解析します
@@ -328,10 +326,6 @@ trait TeaParty {
 		Matcher matcher = Matcher.lastMatcher
 		String key = matcher.group(1)
 		String scalar = (matcher.groupCount() >= 2)? matcher.group(2) : null
-		// 識別キーが他の宣言と重複しないか確認します
-		if (makers.any { it.dec.key == key }){
-			throw new TpacSyntaxException(String.format(msgs.exc.duplicateIdKey, key))
-		}
 		// TeaMakerを新規に生成して宣言を作成します
 		List splited = splitKey(key)
 		makers << server.newMaker(splited[0])

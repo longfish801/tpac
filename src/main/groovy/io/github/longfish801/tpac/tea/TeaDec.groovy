@@ -10,7 +10,6 @@ import io.github.longfish801.tpac.tea.TeaServer
 
 /**
  * 宣言の特性です。
- * @version 0.3.00 2020/05/23
  * @author io.github.longfish801
  */
 trait TeaDec extends TeaHandle {
@@ -52,8 +51,8 @@ trait TeaDec extends TeaHandle {
 	 * @return パスに対応するハンドル（該当するハンドルがなければnull）
 	 */
 	@Override
-	TeaHandle solvePath(String path){
-		return (path.startsWith(cnst.path.level))? server.solvePath(path) : super.solvePath(path)
+	TeaHandle solve(String path){
+		return (path.startsWith(cnst.path.level))? server.solve(path) : super.solve(path)
 	}
 	
 	/**

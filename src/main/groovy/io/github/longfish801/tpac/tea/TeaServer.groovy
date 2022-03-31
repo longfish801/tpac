@@ -26,7 +26,6 @@ import java.util.regex.Matcher
  * 変更したい場合は {@link #newParty()}を、
  * 宣言のタグに応じて生成器（{@link TeaMaker}）を
  * 変更したい場合は {@link #newMaker(String)}をオーバーライドしてください。
- * @version 0.3.00 2020/05/23
  * @author io.github.longfish801
  */
 trait TeaServer {
@@ -61,12 +60,20 @@ trait TeaServer {
 	}
 	
 	/**
-	 * 対象を解析して tpac文書を生成し保持します。
+	 * 対象を解析して tpac文書を生成し保持します。<br/>
+	 * 同じ識別キーの宣言が複数あるときはマージします。
 	 * @param source 解析対象（File、URL、String、BufferedReaderのいずれか）
 	 * @return 自インスタンス
 	 */
 	TeaServer soak(def source){
-		newParty().parse(source).each { this << it.validateRecursive() }
+		newParty().parse(source).each {
+			def dec = it.validateRecursive()
+			if (decs.containsKey(dec.key)){
+				decs[dec.key] += dec
+			} else {
+				this << dec
+			}
+		}
 		return this
 	}
 	
@@ -74,7 +81,6 @@ trait TeaServer {
 	 * tpac文書の宣言を追加します。
 	 * @param dec 宣言
 	 * @return 自インスタンス
-	 * @exception TpacHandlingException 識別キーが重複する宣言は追加できません
 	 */
 	TeaServer leftShift(TeaDec dec){
 		dec.server = this
@@ -109,7 +115,7 @@ trait TeaServer {
 	 * @return パスに対応するハンドル（該当するハンドルがなければnull）
 	 * @exception TpacHandlingException 統語的にありえないパスです
 	 */
-	TeaHandle solvePath(String path){
+	TeaHandle solve(String path){
 		// パス区切り文字で分割した先頭の要素を解決します
 		if (cnst.path.decs.every { !(path ==~ it) }){
 			throw new TpacHandlingException(String.format(msgs.exc.invalidpath, path))
@@ -117,15 +123,26 @@ trait TeaServer {
 		Matcher matcher = Matcher.lastMatcher
 		String deckey = matcher.group(1)
 		String other = (matcher.groupCount() >= 2)? matcher.group(2) : null
-		return (other == null)? decs[deckey] : decs[deckey]?.solvePath(other)
+		return (other == null)? decs[deckey] : decs[deckey]?.solve(other)
 	}
 	
 	/**
-	 * 識別キーが正規表現と一致する宣言のリストを取得します。
+	 * 未加工の識別キーが正規表現と一致する宣言のリストを取得します。
 	 * @param regex 正規表現
-	 * @return 識別キーが正規表現と一致する宣言のリスト（みつからない場合は空リスト）
+	 * @return 未加工の識別キーが正規表現と一致する宣言のリスト（みつからない場合は空リスト）
 	 */
 	List<TeaDec> findAll(String regex){
-		return decs.values().findAll { it.key =~ regex }
+		return decs.values().findAll { it.keyNatural =~ regex }
+	}
+	
+	/**
+	 * クロージャによって対象と判定した宣言のリストを取得します。<br/>
+	 * クロージャには引数として未加工の識別キーを渡します。<br/>
+	 * 戻り値に含めるか否か判定を返してください。<br/>
+	 * @param clos 未加工の識別キーから対象か否か判定を返すクロージャ
+	 * @return クロージャが対象と判定した宣言のリスト（みつからない場合は空リスト）
+	 */
+	List<TeaDec> findAll(Closure clos){
+		return decs.values().findAll { clos.call(it.keyNatural) }
 	}
 }

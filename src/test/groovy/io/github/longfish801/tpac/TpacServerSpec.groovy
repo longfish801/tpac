@@ -13,7 +13,6 @@ import spock.lang.Shared
 
 /**
  * TpacServerクラスのテスト。
- * @version 0.3.00 2020/06/03
  * @author io.github.longfish801
  */
 @Slf4j('LOG')
@@ -59,6 +58,22 @@ class TpacServerSpec extends Specification {
 		then:
 		server['tpac'].key == 'tpac'
 		server['tpac:second'].key == 'tpac:second'
+		
+		when: '同じ識別キーがあるときはマージされること'
+		source = '''\
+			#! tpac:some
+			#-key1 one
+			#-key2 two
+			#! tpac:some
+			#-key2 TWO
+			#-key3 three
+			'''.stripIndent()
+		server.soak(source)
+		then:
+		server['tpac:some'].key == 'tpac:some'
+		server['tpac:some'].map['key1'] == 'one'
+		server['tpac:some'].map['key2'] == 'TWO'
+		server['tpac:some'].map['key3'] == 'three'
 	}
 	
 	def 'leftShift'(){
@@ -93,7 +108,7 @@ class TpacServerSpec extends Specification {
 	}
 	
 	@Unroll
-	def 'solvePath'(){
+	def 'solve'(){
 		given:
 		TpacDec dec = new TpacDec(tag: 'dec')
 		TpacHandle handle = new TpacHandle(tag: 'handle')
@@ -101,7 +116,7 @@ class TpacServerSpec extends Specification {
 		dec << handle
 		
 		expect:
-		server.solvePath(path).path == expect
+		server.solve(path).path == expect
 		
 		where:
 		path			|| expect
@@ -109,12 +124,12 @@ class TpacServerSpec extends Specification {
 		'/dec/handle'	|| '/dec/handle'
 	}
 	
-	def 'solvePath - exception'(){
+	def 'solve - exception'(){
 		given:
 		TpacHandlingException exc
 		
 		when:
-		server.solvePath('x')
+		server.solve('x')
 		then:
 		exc = thrown(TpacHandlingException)
 		exc.message == String.format(msgs.exc.invalidpath, 'x')
@@ -128,14 +143,14 @@ class TpacServerSpec extends Specification {
 		server << dec2
 		List list
 		
-		when: 'タグが someで、名前が空文字ではない宣言を取得します'
-		list = server.findAll(/^some:/)
+		when: 'デフォルトキー以外の宣言を取得します'
+		list = server.findAll { it != 'some:dflt' }
 		then:
 		list.size() == 1
 		list.collect { it.key } == [ 'some:dec2' ]
 		
 		when: 'タグが someの宣言を取得します'
-		list = server.findAll(/^some|some:.+$/)
+		list = server.findAll(/^some:.+$/)
 		then:
 		list.size() == 2
 		list.collect { it.key } == [ 'some', 'some:dec2' ]

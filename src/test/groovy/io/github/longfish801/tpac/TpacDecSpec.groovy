@@ -12,7 +12,6 @@ import spock.lang.Shared
 
 /**
  * TpacDecクラスのテスト。
- * @version 0.3.00 2020/05/23
  * @author io.github.longfish801
  */
 @Slf4j('LOG')
@@ -49,7 +48,7 @@ class TpacDecSpec extends Specification {
 	}
 	
 	@Unroll
-	def 'solvePath'(){
+	def 'solve'(){
 		given:
 		TpacDec dec = new TpacDec(tag: 'dec', server: server)
 		TpacHandle handle = new TpacHandle(tag: 'handle')
@@ -57,7 +56,7 @@ class TpacDecSpec extends Specification {
 		dec << handle
 		
 		expect:
-		dec.solvePath(path).path == expect
+		dec.solve(path).path == expect
 		
 		where:
 		path			|| expect

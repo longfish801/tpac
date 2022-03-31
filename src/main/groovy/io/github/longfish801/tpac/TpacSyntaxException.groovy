@@ -9,7 +9,6 @@ import groovy.transform.InheritConstructors
 
 /**
  * tpac文書の文法誤りを表す例外クラスです。
- * @version 0.3.00 2020/05/23
  * @author io.github.longfish801
  */
 @InheritConstructors
