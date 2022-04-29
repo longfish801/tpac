@@ -171,3 +171,6 @@ dependencies {
 0.3.13
 : TeaHandleクラスのsolvePathメソッドをsolveメソッドに変更しました。
 : TeaHandleクラスにreferメソッドを追加しました。
+
+1.1.00
+: gradle 7.4の記法に対応しました。

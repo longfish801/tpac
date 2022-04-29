@@ -21,8 +21,6 @@ import java.util.regex.Pattern
  * @author io.github.longfish801
  */
 trait TeaHandle implements Cloneable {
-	/** スカラー値でエスケープの対象となる文字の正規表現 */
-	static Pattern escPttrn = Pattern.compile(/[\n\r\f\u0008\t\'\"\\]/, Pattern.MULTILINE)
 	/** タグ */
 	String tag
 	/** 名前 */
@@ -444,7 +442,7 @@ trait TeaHandle implements Cloneable {
 					case {it.startsWith(cnst.scalar.rex)}:
 					case {it.startsWith(cnst.scalar.eval)}:
 					case {it.startsWith(cnst.scalar.str)}:
-					case {escPttrn.matcher(it).find() }:
+					case {cnst.scalar.esc.matcher(it).find()}:
 					case {it.empty}:
 						raw = "${cnst.scalar.str}${escapeJavaExceptMultiByteString(value)}"
 						break
