@@ -1,3 +1,4 @@
+import java.util.regex.Pattern
 
 // 行頭記号
 bullet {
@@ -59,6 +60,7 @@ scalar {
 	eval = '='
 	str = '_'
 	anchor = '#'
+	esc = Pattern.compile(/[\n\r\f\u0008\t\'\"\\]/, Pattern.MULTILINE)
 }
 
 // パスに使用する文字と解析用の正規表現
