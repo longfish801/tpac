@@ -13,6 +13,7 @@ import io.github.longfish801.tpac.TpacRefer
 import io.github.longfish801.tpac.TpacSemanticException
 import java.util.regex.Matcher
 import java.util.regex.Pattern
+import org.slf4j.LoggerFactory
 
 /**
  * ハンドルの特性です。<br/>
@@ -21,6 +22,8 @@ import java.util.regex.Pattern
  * @author io.github.longfish801
  */
 trait TeaHandle implements Cloneable {
+	/** ログ出力 */
+	private static final def LOG = LoggerFactory.getLogger(TeaHandle.class)
 	/** タグ */
 	String tag
 	/** 名前 */
@@ -444,7 +447,8 @@ trait TeaHandle implements Cloneable {
 					case {it.startsWith(cnst.scalar.str)}:
 					case {cnst.scalar.esc.matcher(it).find()}:
 					case {it.empty}:
-						raw = "${cnst.scalar.str}${escapeJavaExceptMultiByteString(value)}"
+						if (!value.empty) value = escapeJavaExceptMultiByteString(value)
+						raw = "${cnst.scalar.str}${value}"
 						break
 					default:
 						raw = value

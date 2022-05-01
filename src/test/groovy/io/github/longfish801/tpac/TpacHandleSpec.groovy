@@ -340,6 +340,7 @@ class TpacHandleSpec extends Specification {
 		handle['dflt'] = [ 'default value1', 'default value2' ]
 		handle['key1'] = 'val1'
 		handle['key2'] = [ 'val2', 'val3' ]
+		handle['key3'] = ''
 		result = getString(handle)
 		expected = '''\
 			#> handle:hello
@@ -347,6 +348,7 @@ class TpacHandleSpec extends Specification {
 			#:comment 2
 			#:comment 3
 			#-key1 val1
+			#-key3 _
 			default value1
 			default value2
 			#-key2

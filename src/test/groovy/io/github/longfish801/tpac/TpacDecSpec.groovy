@@ -5,7 +5,6 @@
  */
 package io.github.longfish801.tpac
 
-import groovy.util.logging.Slf4j
 import spock.lang.Specification
 import spock.lang.Unroll
 import spock.lang.Shared
@@ -14,7 +13,6 @@ import spock.lang.Shared
  * TpacDecクラスのテスト。
  * @author io.github.longfish801
  */
-@Slf4j('LOG')
 class TpacDecSpec extends Specification {
 	@Shared TpacServer server
 	
