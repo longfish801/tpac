@@ -341,6 +341,7 @@ class TpacHandleSpec extends Specification {
 		handle['key1'] = 'val1'
 		handle['key2'] = [ 'val2', 'val3' ]
 		handle['key3'] = ''
+		handle['key4'] = '==='
 		result = getString(handle)
 		expected = '''\
 			#> handle:hello
@@ -349,6 +350,7 @@ class TpacHandleSpec extends Specification {
 			#:comment 3
 			#-key1 val1
 			#-key3 _
+			#-key4 _===
 			default value1
 			default value2
 			#-key2
