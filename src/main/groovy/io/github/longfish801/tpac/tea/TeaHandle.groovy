@@ -447,7 +447,16 @@ trait TeaHandle implements Cloneable {
 					case {it.startsWith(cnst.scalar.str)}:
 					case {cnst.scalar.esc.matcher(it).find()}:
 					case {it.empty}:
-						if (!value.empty) value = escapeJavaExceptMultiByteString(value)
+						// Javaにおけるエスケープシーケンスの対象となる文字（ただしマルチバイト文字を除く）をエスケープします
+						value = value.replaceAll('\\\\', '\\\\\\\\')
+						value = value.replaceAll(/\n/, /\\n/)
+						value = value.replaceAll(/\r/, /\\r/)
+						value = value.replaceAll(/\f/, /\\f/)
+						value = value.replaceAll(/\u0008/, /\\b/)
+						value = value.replaceAll(/\t/, /\\t/)
+						value = value.replaceAll(/\'/, /\\'/)
+						value = value.replaceAll(/\"/, /\\"/)
+						// 明示的に文字列を意味する文字列表現にします
 						raw = "${cnst.scalar.str}${value}"
 						break
 					default:
@@ -459,26 +468,6 @@ trait TeaHandle implements Cloneable {
 				throw new TpacHandlingException(String.format(msgs.exc.noSupportScalarString, value, value.class.name))
 		}
 		return raw
-	}
-	
-	/**
-	 * Javaにおけるエスケープシーケンスの対象となる文字（ただしマルチバイト文字を除く）をエスケープして返します。<br/>
-	 * たとえば改行コード(\n)を文字列「\n」に置換します。<br/>
-	 * Apache Commons Textの StringEscapeUtilsクラスのescapeJavaメソッドはマルチバイト文字も
-	 * エスケープ対象となるため、マルチバイト文字を除いてエスケープする処理を作成しました。
-	 * @param target 対象文字列
-	 * @return エスケープ後の文字列
-	 */
-	static String escapeJavaExceptMultiByteString(String target){
-		target = target.replaceAll('\\\\', '\\\\\\\\')
-		target = target.replaceAll(/\n/, /\\n/)
-		target = target.replaceAll(/\r/, /\\r/)
-		target = target.replaceAll(/\f/, /\\f/)
-		target = target.replaceAll(/\u0008/, /\\b/)
-		target = target.replaceAll(/\t/, /\\t/)
-		target = target.replaceAll(/\'/, /\\'/)
-		target = target.replaceAll(/\"/, /\\"/)
-		return target
 	}
 	
 	/**
