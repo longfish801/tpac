@@ -219,6 +219,20 @@ trait TeaHandle implements Cloneable {
 	}
 	
 	/**
+	 * 自身と下位のハンドルをすべて走査します。<br/>
+	 * 引数として渡されたクロージャを自身と下位のハンドルすべてで実行します。<br/>
+	 * クロージャには引数としてハンドルを渡します。<br/>
+	 * 先にクロージャを呼び、それから下位のハンドルについて再帰的に呼びます。
+	 * @param clos 引数としてハンドルを渡されるクロージャ
+	 * @return 自インスタンス
+	 */
+	TeaHandle scan(Closure clos){
+		clos.call(this)
+		lowers.values().each { it.scan(clos) }
+		return this
+	}
+	
+	/**
 	 * キーの妥当性を検証します。<br/>
 	 * キーの条件として以下のマップを指定してください。</p>
 	 * <dl>

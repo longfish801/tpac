@@ -241,6 +241,22 @@ class TpacHandleSpec extends Specification {
 		list.size() == 0
 	}
 	
+	def 'scan'(){
+		given:
+		TpacHandle handle = new TpacHandle(tag: 'some', name: 'handle')
+		TpacHandle lower1 = new TpacHandle(tag: 'some')
+		TpacHandle lower2 = new TpacHandle(tag: 'some', name: 'lower2')
+		handle << lower1
+		handle << lower2
+		
+		when:
+		handle.scan { def hndl -> hndl.boo = 'foo' }
+		then:
+		handle.boo == 'foo'
+		lower1.boo == 'foo'
+		lower2.boo == 'foo'
+	}
+	
 	def 'validateKeys'(){
 		given:
 		TpacHandle handle

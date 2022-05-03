@@ -174,3 +174,6 @@ dependencies {
 
 1.1.00
 : gradle 7.4の記法に対応しました。
+
+1.1.01
+: TeaHandleクラスにscanメソッドを追加しました。
