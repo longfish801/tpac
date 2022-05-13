@@ -22,7 +22,8 @@ class TpacRefer {
 	/**
 	 * インスタンスを生成します。
 	 * @param handle ハンドル
-	 * @param fullpath アンカーを含みうるパス
+	 * @param path パス
+	 * @return インスタンス
 	 */
 	static TpacRefer newInstance(TeaHandle handle, String path){
 		return new TpacRefer(handle: handle, path: path)

@@ -194,7 +194,7 @@ trait TeaMaker {
 			case {it.startsWith(cnst.scalar.rex)}:
 				return Pattern.compile(raw.substring(cnst.scalar.rex.length()))
 			case {it.startsWith(cnst.scalar.eval)}:
-				return new TpacEval(raw.substring(cnst.scalar.eval.length()))
+				return TpacEval.newInstance(raw.substring(cnst.scalar.eval.length()))
 			case {it.startsWith(cnst.scalar.str)}:
 				return StringEscapeUtils.unescapeJava(raw.substring(cnst.scalar.str.length()))
 		}

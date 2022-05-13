@@ -177,3 +177,7 @@ dependencies {
 
 1.1.01
 : TeaHandleクラスにscanメソッドを追加しました。
+
+1.1.02
+: TeaHandleクラスのcloneメソッドについてディープコピーをするよう見直しました。
+: TeaServerクラスにcloneメソッドを追加しました。

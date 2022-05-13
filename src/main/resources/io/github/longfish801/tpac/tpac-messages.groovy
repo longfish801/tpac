@@ -15,6 +15,7 @@ exc {
 	invalidHandle = 'Invalid handle beginning line, check syntax.'
 	invalidIdKey = 'Invalid identification key, check syntax.'
 	parseError = 'Failed to parse tpac document.'
+	noUpper = 'No upper handle. key=%s'
 }
 
 // 妥当性検証エラーメッセージ

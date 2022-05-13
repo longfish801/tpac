@@ -38,6 +38,64 @@ trait TeaHandle implements Cloneable {
 	Map map = [:]
 	
 	/**
+	 * クローンを返します。<br/>
+	 * 関連するTeaServerや宣言もすべてクローンします。
+	 * @return クローン（TeaServer、宣言を未設定時はnull）
+	 * @see #cloneRecursive()
+	 */
+	@Override
+	TeaHandle clone(){
+		return dec?.server?.clone().solve(path)
+	}
+	
+	/**
+	 * 再帰的に下位のハンドルも含めてクローンします。<br/>
+	 * 下位ハンドルやマップはディープコピーします。<br/>
+	 * TeaServerや宣言、上位ハンドルも含めたクローンをしたい場合は、
+	 * {@link #clone()}を利用してください。
+	 * @return クローン
+	 * @see #clone()
+	 */
+	TeaHandle cloneRecursive(){
+		TeaHandle cloned = (TeaHandle) super.clone()
+		cloned.lowers = lowers.each { String key, TeaHandle lower ->
+			TeaHandle clonedLower = lower.cloneRecursive()
+			cloned << clonedLower
+			return [key, clonedLower]
+		}
+		cloned.comments = comments.collect { it }
+		cloned.map = map.collectEntries { String key, def val ->
+			def clonedVal
+			switch (val){
+				case null:
+				case true:
+				case false:
+				case Integer:
+				case BigDecimal:
+				case Pattern:
+				case GString:
+				case String:
+					clonedVal = val
+					break
+				case TpacRefer:
+					clonedVal = TpacRefer.newInstance(cloned, val.path)
+					break
+				case TpacEval:
+					clonedVal = TpacEval.newInstance(val.expression)
+					break
+				default:
+					try {
+						clonedVal = val.clone()
+					} catch (CloneNotSupportedException exc){
+						clonedVal = val
+					}
+			}
+			return [key, clonedVal]
+		}
+		return cloned
+	}
+	
+	/**
 	 * 識別キーを返します。<br/>
 	 * 識別キーはタグ名と名前を半角コロンで連結した文字列です。<br/>
 	 * 名前を省略した場合はタグ名のみを返します。
@@ -50,7 +108,8 @@ trait TeaHandle implements Cloneable {
 	
 	/**
 	 * 未加工の識別キーを返します。<br/>
-	 * 識別キーはタグ名と名前を半角コロンで連結した文字列です。
+	 * 識別キーはタグ名と名前を半角コロンで連結した文字列です。<br/>
+	 * 名前を省略した場合は文字列"dflt"が使用されます。
 	 * @return 未加工の識別キー
 	 */
 	String getKeyNatural(){
@@ -60,17 +119,19 @@ trait TeaHandle implements Cloneable {
 	/**
 	 * このハンドルの階層を返します。
 	 * @return 階層
+	 * @exception IllegalStateException 上位ハンドルが設定されていません。
 	 */
 	int getLevel(){
+		if (upper == null) throw new IllegalStateException(String.format(msgs.exc.noUpper, key))
 		return upper.level + 1
 	}
 	
 	/**
 	 * このハンドルの所属する宣言を返します。
-	 * @return 宣言
+	 * @return 宣言（上位ハンドルを未設定時はnull）
 	 */
 	TeaDec getDec(){
-		return upper.dec
+		return upper?.dec
 	}
 	
 	/**
@@ -127,8 +188,10 @@ trait TeaHandle implements Cloneable {
 	/**
 	 * このハンドルの絶対パスを返します。
 	 * @return 絶対パス
+	 * @exception IllegalStateException 上位ハンドルが設定されていません。
 	 */
 	String getPath(){
+		if (upper == null) throw new IllegalStateException(String.format(msgs.exc.noUpper, key))
 		return "${upper.path}${cnst.path.level}${key}" as String
 	}
 	
@@ -482,20 +545,6 @@ trait TeaHandle implements Cloneable {
 				throw new TpacHandlingException(String.format(msgs.exc.noSupportScalarString, value, value.class.name))
 		}
 		return raw
-	}
-	
-	/**
-	 * クローンを返します。
-	 * @return クローン
-	 */
-	@Override
-	TeaHandle clone(){
-		TeaHandle cloned = (TeaHandle) super.clone()
-		if (upper != null) cloned.upper = upper.clone()
-		cloned.lowers = lowers.clone()
-		cloned.comments = comments.clone()
-		cloned.map = map.clone()
-		return cloned
 	}
 	
 	/**

@@ -14,11 +14,12 @@ class TpacEval {
 	String expression
 	
 	/**
-	 * コンストラクタ。
+	 * インスタンスを生成します。
 	 * @param expression 評価対象の値
+	 * @return インスタンス
 	 */
-	TpacEval(String expression) {
-		this.expression = expression
+	static TpacEval newInstance(String expression){
+		return new TpacEval(expression: expression)
 	}
 	
 	/**

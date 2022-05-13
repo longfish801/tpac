@@ -28,9 +28,24 @@ import java.util.regex.Matcher
  * 変更したい場合は {@link #newMaker(String)}をオーバーライドしてください。
  * @author io.github.longfish801
  */
-trait TeaServer {
+trait TeaServer implements Cloneable {
 	/** 識別キーと宣言とのマップ */
 	Map<String, TeaDec> decs = [:]
+	
+	/**
+	 * クローンを返します。
+	 * @return クローン
+	 */
+	@Override
+	TeaServer clone(){
+		TeaServer cloned = (TeaServer) super.clone()
+		cloned.decs = decs.collectEntries { String key, TeaDec dec ->
+			TeaDec clonedDec = dec.cloneRecursive()
+			clonedDec.server = cloned
+			return [key, clonedDec]
+		}
+		return cloned
+	}
 	
 	/**
 	 * 宣言のタグに対応する生成器を返します。<br/>
