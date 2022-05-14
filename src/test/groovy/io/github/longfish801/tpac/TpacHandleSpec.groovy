@@ -38,11 +38,16 @@ class TpacHandleSpec extends Specification {
 		handle.comments << 'Comment'
 		handle['KEY'] = 'VAL'
 		cloned = handle.clone()
+		handle['KEY'] = 'VAL2'
+		handle.comments << 'Comment2'
 		then:
 		cloned.upper.key == dec.key
 		cloned.lowers['lower:dflt'].key == lower.key
-		cloned.comments[0] == 'Comment'
+		cloned.comments == ['Comment']
 		cloned.KEY == 'VAL'
+		cloned != handle
+		cloned.dec != dec
+		cloned.dec.server != server
 		
 		when:
 		server = new TpacServer()

@@ -30,7 +30,7 @@ trait TeaHandle implements Cloneable {
 	String name = cnst.dflt.handleName
 	/** 上位ハンドル */
 	TeaHandle upper
-	/** 識別キーと下位ハンドルとのマップ */
+	/** 未加工の識別キーと下位ハンドルとのマップ */
 	Map<String, TeaHandle> lowers = [:]
 	/** コメント */
 	List comments = []
@@ -58,7 +58,7 @@ trait TeaHandle implements Cloneable {
 	 */
 	TeaHandle cloneRecursive(){
 		TeaHandle cloned = (TeaHandle) super.clone()
-		cloned.lowers = lowers.each { String key, TeaHandle lower ->
+		cloned.lowers = lowers.collectEntries { String key, TeaHandle lower ->
 			TeaHandle clonedLower = lower.cloneRecursive()
 			cloned << clonedLower
 			return [key, clonedLower]
