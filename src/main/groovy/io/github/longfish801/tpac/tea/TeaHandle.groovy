@@ -59,10 +59,9 @@ trait TeaHandle implements Cloneable {
 	TeaHandle cloneRecursive(){
 		TeaHandle cloned = (TeaHandle) super.clone()
 		cloned.lowers = lowers.collectEntries { String key, TeaHandle lower ->
-			TeaHandle clonedLower = lower.cloneRecursive()
-			cloned << clonedLower
-			return [key, clonedLower]
+			return [key, lower.cloneRecursive()]
 		}
+		cloned.lowers.values().each { it.upper = cloned }
 		cloned.comments = comments.collect { it }
 		cloned.map = map.collectEntries { String key, def val ->
 			def clonedVal

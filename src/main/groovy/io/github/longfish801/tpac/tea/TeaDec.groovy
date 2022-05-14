@@ -21,8 +21,8 @@ trait TeaDec extends TeaHandle {
 	 * @return クローン
 	 */
 	@Override
-	TeaHandle cloneRecursive(){
-		return super.cloneRecursive()
+	TeaDec cloneRecursive(){
+		return (TeaDec) super.cloneRecursive()
 	}
 	
 	/**

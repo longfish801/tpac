@@ -38,9 +38,9 @@ class TpacDecSpec extends Specification {
 		cloned.key == dec.key
 		cloned.comments == ['Comment']
 		cloned.KEY == 'VAL'
+		cloned.server != dec.server
 		cloned != dec
-		cloned.lowers['handle'] != handle
-		cloned.server != server
+		cloned.lowers['handle:dflt'] != dec.lowers['handle:dflt']
 	}
 	
 	def setup(){
