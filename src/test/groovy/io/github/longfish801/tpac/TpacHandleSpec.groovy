@@ -382,13 +382,8 @@ class TpacHandleSpec extends Specification {
 		exc.message == String.format(msgs.validate.invalidType, 'boo', String.class.name)
 	}
 	
-	def 'write'(){
+	def 'toString'(){
 		given:
-		Closure getString = { TpacHandle hndl ->
-			StringWriter writer = new StringWriter()
-			hndl.write(writer)
-			return writer.toString()
-		}
 		TpacDec dec
 		TpacHandle handle
 		TpacHandle lower
@@ -401,7 +396,7 @@ class TpacHandleSpec extends Specification {
 		dec = new TpacDec(tag: 'dec')
 		handle = new TpacHandle(tag: 'handle')
 		dec << handle
-		result = getString(handle)
+		result = handle.toString()
 		expected = '''\
 			#> handle
 			#>
@@ -422,7 +417,7 @@ class TpacHandleSpec extends Specification {
 		handle['key2'] = [ 'val2', 'val3' ]
 		handle['key3'] = ''
 		handle['key4'] = '==='
-		result = getString(handle)
+		result = handle.toString()
 		expected = '''\
 			#> handle:hello
 			#:comment 1
@@ -452,7 +447,7 @@ class TpacHandleSpec extends Specification {
 		handle << lower
 		lower << lowerlower
 		lowerlower << lowerlowerlower
-		result = getString(handle)
+		result = handle.toString()
 		expected = '''\
 			#> handle
 			#>
@@ -469,6 +464,21 @@ class TpacHandleSpec extends Specification {
 			'''.stripIndent().denormalize()
 		then:
 		result == expected
+	}
+	
+	def 'asString'(){
+		given:
+		TpacHandle handle
+		
+		when:
+		handle = new TpacHandle(tag: 'handle')
+		handle['text'] = ['aaa', 'bbb', 'ccc']
+		handle['str'] = 'hello'
+		handle['null'] = null
+		then:
+		handle.asString('text') == ['aaa', 'bbb', 'ccc'].join(System.lineSeparator())
+		handle.asString('str') == 'hello'
+		handle.asString('null') == 'null'
 	}
 	
 	def 'formatText'(){

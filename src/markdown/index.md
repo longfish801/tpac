@@ -181,3 +181,6 @@ dependencies {
 1.1.02
 : TeaHandleクラスのcloneメソッドについてディープコピーをするよう見直しました。
 : TeaServerクラスにcloneメソッドを追加しました。
+
+1.1.03
+: TeaHandleクラスに toString, asStringメソッドを追加しました。

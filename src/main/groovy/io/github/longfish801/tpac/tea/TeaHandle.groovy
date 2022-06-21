@@ -447,6 +447,29 @@ trait TeaHandle implements Cloneable {
 	}
 	
 	/**
+	 * このハンドルの文字列表現を返します。<br/>
+	 * 文字列表現の取得には {@link #write(Writer)}を用います。
+	 * @return 文字列表現
+	 */
+	String toString(){
+		StringWriter writer = new StringWriter()
+		write(writer)
+		return writer.toString()
+	}
+	
+	/**
+	 * マップからキーに対応する値を文字列に変換して返します。<br/>
+	 * 値がListのときは {@link #formatText(LIst)}で変換します。<br/>
+	 * それ以外のときは {@link #formatScalar(def)}で変換します。
+	 * @param key キー
+	 * @return キーに対応する値を文字列に変換した結果
+	 */
+	String asString(String key){
+		def value = getAt(key)
+		return (value instanceof List)? formatText(value) : formatScalar(value)
+	}
+	
+	/**
 	 * テキストの文字列表現を返します。<br/>
 	 * 先頭が半角シャープで始まる行がなければ、範囲を示す区切り行は省略します。<br/>
 	 * 先頭が半角シャープで始まる行があれば、区切り行で範囲を明示します。<br/>
