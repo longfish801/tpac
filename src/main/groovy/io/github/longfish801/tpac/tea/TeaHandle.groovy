@@ -257,6 +257,29 @@ trait TeaHandle implements Cloneable {
 	}
 	
 	/**
+	 * パスに対応するハンドルあるいはマップの値を文字列に変換して返します。
+	 * @param path パス
+	 * @return パスに対応するハンドルあるいはマップの値を変換した文字列
+	 * @see #refer(String)
+	 * @see #asString(String)
+	 */
+	String referAsString(String path){
+		def value = refer(path)
+		String str
+		switch (value){
+			case TeaHandle:
+				str = value.toString()
+				break
+			case List:
+				str = formatText(value)
+				break
+			default:
+				str = formatScalar(value)
+		}
+		return str
+	}
+	
+	/**
 	 * 未加工の識別キーの一部が正規表現とマッチする下位ハンドルのリストを取得します。<br/>
 	 * 直下の下位ハンドルのみ探します。<br/>
 	 * 再帰的にさらに下位まで探すわけではないことに注意してください。
@@ -491,7 +514,7 @@ trait TeaHandle implements Cloneable {
 			return decideDiv("${curDiv}${cnst.tostr.textRngDivChar}")
 		}
 		
-		// 範囲を示す区切り行で挟んだ文字列表現を返す
+		// 範囲を示す区切り行で挟んだ文字列表現を返します
 		String divLine = decideDiv(cnst.tostr.textRngDiv)
 		lines.add(0, divLine)
 		lines << divLine

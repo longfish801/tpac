@@ -278,6 +278,36 @@ class TpacHandleSpec extends Specification {
 		'../some:handle#'			|| 'handleDflt'
 	}
 	
+	def 'referAsString'(){
+		given:
+		TpacHandle handle
+		TpacDec dec
+		
+		when:
+		String handleStr = '''\
+			#> handle
+			#-str hello
+			#-null null
+			#-text
+			aaa
+			bbb
+			ccc
+			#>
+			
+			'''.stripIndent().denormalize()
+		dec = new TpacDec(tag: 'some')
+		handle = new TpacHandle(tag: 'handle')
+		dec << handle
+		handle['text'] = ['aaa', 'bbb', 'ccc']
+		handle['str'] = 'hello'
+		handle['null'] = null
+		then:
+		handle.referAsString('../handle') == handleStr
+		handle.referAsString('#text') == ['aaa', 'bbb', 'ccc'].join(System.lineSeparator())
+		handle.referAsString('#str') == 'hello'
+		handle.referAsString('#null') == 'null'
+	}
+	
 	def 'findAll'(){
 		given:
 		TpacHandle handle = new TpacHandle(tag: 'some', name: 'handle')
