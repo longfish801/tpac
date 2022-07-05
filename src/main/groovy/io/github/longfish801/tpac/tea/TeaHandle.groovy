@@ -257,26 +257,16 @@ trait TeaHandle implements Cloneable {
 	}
 	
 	/**
-	 * パスに対応するハンドルあるいはマップの値を文字列に変換して返します。
+	 * パスに対応するハンドルあるいはマップの値を文字列に変換して返します。<br/>
+	 * 値がListのときは各要素を改行コードで連結します。<br/>
+	 * それ以外のときは toStringメソッドを用います。
 	 * @param path パス
 	 * @return パスに対応するハンドルあるいはマップの値を変換した文字列
 	 * @see #refer(String)
-	 * @see #asString(String)
 	 */
 	String referAsString(String path){
 		def value = refer(path)
-		String str
-		switch (value){
-			case TeaHandle:
-				str = value.toString()
-				break
-			case List:
-				str = formatText(value)
-				break
-			default:
-				str = formatScalar(value)
-		}
-		return str
+		return (value instanceof List)? value.join(System.lineSeparator()) : value.toString()
 	}
 	
 	/**
@@ -482,14 +472,14 @@ trait TeaHandle implements Cloneable {
 	
 	/**
 	 * マップからキーに対応する値を文字列に変換して返します。<br/>
-	 * 値がListのときは {@link #formatText(LIst)}で変換します。<br/>
-	 * それ以外のときは {@link #formatScalar(def)}で変換します。
+	 * 値がListのときは各要素を改行コードで連結します。<br/>
+	 * それ以外のときは toStringメソッドを用います。
 	 * @param key キー
 	 * @return キーに対応する値を文字列に変換した結果
 	 */
 	String asString(String key){
 		def value = getAt(key)
-		return (value instanceof List)? formatText(value) : formatScalar(value)
+		return (value instanceof List)? value.join(System.lineSeparator()) : value.toString()
 	}
 	
 	/**

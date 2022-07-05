@@ -187,3 +187,6 @@ dependencies {
 
 1.1.04
 : TeaHandleクラスに referAsStringメソッドを追加しました。
+
+1.1.05
+: TeaHandleクラスの asString, referAsStringメソッドについて処理方法を修正しました。
