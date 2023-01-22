@@ -174,3 +174,19 @@ dependencies {
 
 1.1.00
 : gradle 7.4の記法に対応しました。
+
+1.1.01
+: TeaHandleクラスにscanメソッドを追加しました。
+
+1.1.02
+: TeaHandleクラスのcloneメソッドについてディープコピーをするよう見直しました。
+: TeaServerクラスにcloneメソッドを追加しました。
+
+1.1.03
+: TeaHandleクラスに toString, asStringメソッドを追加しました。
+
+1.1.04
+: TeaHandleクラスに referAsStringメソッドを追加しました。
+
+1.1.05
+: TeaHandleクラスの asString, referAsStringメソッドについて処理方法を修正しました。

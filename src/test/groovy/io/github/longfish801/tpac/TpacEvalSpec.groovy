@@ -19,7 +19,7 @@ class TpacEvalSpec extends Specification {
 		TpacEval eval
 		
 		when:
-		eval = new TpacEval('3 + 2')
+		eval = TpacEval.newInstance('3 + 2')
 		then:
 		eval instanceof TpacEval
 		eval.expression == '3 + 2'
@@ -30,7 +30,7 @@ class TpacEvalSpec extends Specification {
 		TpacEval eval
 		
 		when:
-		eval = new TpacEval('3 + 2')
+		eval = TpacEval.newInstance('3 + 2')
 		then:
 		eval.eval() == 5
 	}

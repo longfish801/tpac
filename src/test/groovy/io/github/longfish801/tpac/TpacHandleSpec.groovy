@@ -19,6 +19,70 @@ import spock.lang.Unroll
  */
 @Slf4j('LOG')
 class TpacHandleSpec extends Specification {
+	def 'clone'(){
+		given:
+		TpacServer server
+		TpacDec dec
+		TpacHandle handle
+		TpacHandle lower
+		TpacHandle cloned
+		
+		when:
+		server = new TpacServer()
+		dec = new TpacDec(tag: 'dec')
+		handle = new TpacHandle(tag: 'handle')
+		lower = new TpacHandle(tag: 'lower')
+		server << dec
+		dec << handle
+		handle << lower
+		handle.comments << 'Comment'
+		handle['KEY'] = 'VAL'
+		cloned = handle.clone()
+		handle['KEY'] = 'VAL2'
+		handle.comments << 'Comment2'
+		then:
+		cloned.upper.key == dec.key
+		cloned.lowers['lower:dflt'].key == lower.key
+		cloned.comments == ['Comment']
+		cloned.KEY == 'VAL'
+		cloned.dec.server != handle.dec.server
+		cloned.dec != handle.dec
+		cloned != handle
+		cloned.lowers['lower:dflt'] != handle.lowers['lower:dflt']
+		
+		when:
+		server = new TpacServer()
+		dec = new TpacDec(tag: 'dec')
+		handle = new TpacHandle(tag: 'handle')
+		server << dec
+		dec << handle
+		handle['null'] = null
+		handle['true'] = true
+		handle['false'] = false
+		handle['Integer'] = 64
+		handle['BigDecimal'] = 12.34
+		handle['Pattern'] = Pattern.compile(/.+/)
+		handle['GString'] = "a${'b'}c"
+		handle['String'] = 'def' as String
+		handle['TpacRefer'] = TpacRefer.newInstance(handle, '..')
+		handle['TpacEval'] = TpacEval.newInstance('3 + 2')
+		handle['Long'] = new Long('1024')
+		cloned = handle.clone()
+		then:
+		cloned['null'] == null
+		cloned['true'] == true
+		cloned['false'] == false
+		cloned['Integer'] == 64
+		cloned['BigDecimal'] == 12.34
+		cloned['Pattern'].pattern() == /.+/
+		cloned['GString'].toString() == 'abc'
+		cloned['String'] == 'def'
+		cloned['TpacRefer'].path == '..'
+		cloned['TpacEval'].expression == '3 + 2'
+		cloned['null'] == null
+		cloned['Long'].intValue() == 1024
+	}
+	
 	def 'getKey'(){
 		given:
 		TpacHandle handle
@@ -214,6 +278,36 @@ class TpacHandleSpec extends Specification {
 		'../some:handle#'			|| 'handleDflt'
 	}
 	
+	def 'referAsString'(){
+		given:
+		TpacHandle handle
+		TpacDec dec
+		
+		when:
+		String handleStr = '''\
+			#> handle
+			#-str hello
+			#-null null
+			#-text
+			aaa
+			bbb
+			ccc
+			#>
+			
+			'''.stripIndent().denormalize()
+		dec = new TpacDec(tag: 'some')
+		handle = new TpacHandle(tag: 'handle')
+		dec << handle
+		handle['text'] = ['aaa', 'bbb', 'ccc']
+		handle['str'] = 'hello'
+		handle['null'] = null
+		then:
+		handle.referAsString('../handle') == handleStr
+		handle.referAsString('#text') == ['aaa', 'bbb', 'ccc'].join(System.lineSeparator())
+		handle.referAsString('#str') == 'hello'
+		handle.referAsString('#null') == 'null'
+	}
+	
 	def 'findAll'(){
 		given:
 		TpacHandle handle = new TpacHandle(tag: 'some', name: 'handle')
@@ -239,6 +333,22 @@ class TpacHandleSpec extends Specification {
 		list = handle.findAll(/nosuch/)
 		then:
 		list.size() == 0
+	}
+	
+	def 'scan'(){
+		given:
+		TpacHandle handle = new TpacHandle(tag: 'some', name: 'handle')
+		TpacHandle lower1 = new TpacHandle(tag: 'some')
+		TpacHandle lower2 = new TpacHandle(tag: 'some', name: 'lower2')
+		handle << lower1
+		handle << lower2
+		
+		when:
+		handle.scan { def hndl -> hndl.boo = 'foo' }
+		then:
+		handle.boo == 'foo'
+		lower1.boo == 'foo'
+		lower2.boo == 'foo'
 	}
 	
 	def 'validateKeys'(){
@@ -302,13 +412,8 @@ class TpacHandleSpec extends Specification {
 		exc.message == String.format(msgs.validate.invalidType, 'boo', String.class.name)
 	}
 	
-	def 'write'(){
+	def 'toString'(){
 		given:
-		Closure getString = { TpacHandle hndl ->
-			StringWriter writer = new StringWriter()
-			hndl.write(writer)
-			return writer.toString()
-		}
 		TpacDec dec
 		TpacHandle handle
 		TpacHandle lower
@@ -321,7 +426,7 @@ class TpacHandleSpec extends Specification {
 		dec = new TpacDec(tag: 'dec')
 		handle = new TpacHandle(tag: 'handle')
 		dec << handle
-		result = getString(handle)
+		result = handle.toString()
 		expected = '''\
 			#> handle
 			#>
@@ -342,7 +447,7 @@ class TpacHandleSpec extends Specification {
 		handle['key2'] = [ 'val2', 'val3' ]
 		handle['key3'] = ''
 		handle['key4'] = '==='
-		result = getString(handle)
+		result = handle.toString()
 		expected = '''\
 			#> handle:hello
 			#:comment 1
@@ -372,7 +477,7 @@ class TpacHandleSpec extends Specification {
 		handle << lower
 		lower << lowerlower
 		lowerlower << lowerlowerlower
-		result = getString(handle)
+		result = handle.toString()
 		expected = '''\
 			#> handle
 			#>
@@ -389,6 +494,21 @@ class TpacHandleSpec extends Specification {
 			'''.stripIndent().denormalize()
 		then:
 		result == expected
+	}
+	
+	def 'asString'(){
+		given:
+		TpacHandle handle
+		
+		when:
+		handle = new TpacHandle(tag: 'handle')
+		handle['text'] = ['aaa', 'bbb', 'ccc']
+		handle['str'] = 'hello'
+		handle['null'] = null
+		then:
+		handle.asString('text') == ['aaa', 'bbb', 'ccc'].join(System.lineSeparator())
+		handle.asString('str') == 'hello'
+		handle.asString('null') == 'null'
 	}
 	
 	def 'formatText'(){
@@ -446,7 +566,7 @@ class TpacHandleSpec extends Specification {
 		2.3			|| '2.3'
 		TpacRefer.newInstance(new TpacHandle(tag: 'handle'), '..')	|| '@..'
 		Pattern.compile(/.+/)	|| ':.+'
-		new TpacEval('3+2')	|| '=3+2'
+		TpacEval.newInstance('3+2')	|| '=3+2'
 		"${'abc'}d${System.lineSeparator()}"	|| '_abcd\\r\\n'
 		'null'		|| '_null'
 		'true'		|| '_true'
@@ -484,28 +604,9 @@ class TpacHandleSpec extends Specification {
 		exc.message == String.format(msgs.exc.noSupportScalarString, '[]', 'java.util.ArrayList')
 	}
 	
-	def 'clone'(){
-		given:
-		TpacDec dec = new TpacDec(tag: 'dec')
-		TpacHandle handle = new TpacHandle(tag: 'handle')
-		TpacHandle lower = new TpacHandle(tag: 'lower')
-		TpacHandle cloned
-		
-		when:
-		dec << handle
-		handle << lower
-		handle.comments << 'Comment'
-		handle['KEY'] = 'VAL'
-		cloned = handle.clone()
-		then:
-		cloned.upper.key == dec.key
-		cloned.lowers['lower:dflt'].key == lower.key
-		cloned.comments[0] == 'Comment'
-		cloned.KEY == 'VAL'
-	}
-	
 	def 'plus'(){
 		given:
+		TpacServer server = new TpacServer()
 		TpacDec dec1 = new TpacDec(tag: 'dec1')
 		TpacDec dec2 = new TpacDec(tag: 'dec2')
 		TpacHandle handle1 = new TpacHandle(tag: 'handle1')
@@ -524,6 +625,8 @@ class TpacHandleSpec extends Specification {
 		String expected
 		
 		when:
+		server << dec1
+		server << dec2
 		// handle1
 		dec1 << handle1
 		handle1 << lower11

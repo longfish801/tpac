@@ -16,6 +16,33 @@ import spock.lang.Shared
 class TpacDecSpec extends Specification {
 	@Shared TpacServer server
 	
+	def 'clone'(){
+		given:
+		TpacServer server
+		TpacDec dec
+		TpacHandle handle
+		TpacDec cloned
+		
+		when:
+		server = new TpacServer()
+		dec = new TpacDec(tag: 'dec')
+		handle = new TpacHandle(tag: 'handle')
+		server << dec
+		dec << handle
+		dec.comments << 'Comment'
+		dec['KEY'] = 'VAL'
+		cloned = dec.clone()
+		dec['KEY'] = 'VAL2'
+		dec.comments << 'Comment2'
+		then:
+		cloned.key == dec.key
+		cloned.comments == ['Comment']
+		cloned.KEY == 'VAL'
+		cloned.server != dec.server
+		cloned != dec
+		cloned.lowers['handle:dflt'] != dec.lowers['handle:dflt']
+	}
+	
 	def setup(){
 		server = new TpacServer()
 	}

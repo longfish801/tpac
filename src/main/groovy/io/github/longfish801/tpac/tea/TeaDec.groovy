@@ -17,6 +17,15 @@ trait TeaDec extends TeaHandle {
 	TeaServer server
 	
 	/**
+	 * 再帰的に下位のハンドルも含めてクローンします。
+	 * @return クローン
+	 */
+	@Override
+	TeaDec cloneRecursive(){
+		return (TeaDec) super.cloneRecursive()
+	}
+	
+	/**
 	 * この宣言の階層(0)を返します。
 	 * @return 階層
 	 */

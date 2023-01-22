@@ -30,12 +30,69 @@ trait TeaHandle implements Cloneable {
 	String name = cnst.dflt.handleName
 	/** 上位ハンドル */
 	TeaHandle upper
-	/** 識別キーと下位ハンドルとのマップ */
+	/** 未加工の識別キーと下位ハンドルとのマップ */
 	Map<String, TeaHandle> lowers = [:]
 	/** コメント */
 	List comments = []
 	/** マップ */
 	Map map = [:]
+	
+	/**
+	 * クローンを返します。<br/>
+	 * 関連するTeaServerや宣言もすべてクローンします。
+	 * @return クローン（TeaServer、宣言を未設定時はnull）
+	 * @see #cloneRecursive()
+	 */
+	@Override
+	TeaHandle clone(){
+		return dec?.server?.clone().solve(path)
+	}
+	
+	/**
+	 * 再帰的に下位のハンドルも含めてクローンします。<br/>
+	 * 下位ハンドルやマップはディープコピーします。<br/>
+	 * TeaServerや宣言、上位ハンドルも含めたクローンをしたい場合は、
+	 * {@link #clone()}を利用してください。
+	 * @return クローン
+	 * @see #clone()
+	 */
+	TeaHandle cloneRecursive(){
+		TeaHandle cloned = (TeaHandle) super.clone()
+		cloned.lowers = lowers.collectEntries { String key, TeaHandle lower ->
+			return [key, lower.cloneRecursive()]
+		}
+		cloned.lowers.values().each { it.upper = cloned }
+		cloned.comments = comments.collect { it }
+		cloned.map = map.collectEntries { String key, def val ->
+			def clonedVal
+			switch (val){
+				case null:
+				case true:
+				case false:
+				case Integer:
+				case BigDecimal:
+				case Pattern:
+				case GString:
+				case String:
+					clonedVal = val
+					break
+				case TpacRefer:
+					clonedVal = TpacRefer.newInstance(cloned, val.path)
+					break
+				case TpacEval:
+					clonedVal = TpacEval.newInstance(val.expression)
+					break
+				default:
+					try {
+						clonedVal = val.clone()
+					} catch (CloneNotSupportedException exc){
+						clonedVal = val
+					}
+			}
+			return [key, clonedVal]
+		}
+		return cloned
+	}
 	
 	/**
 	 * 識別キーを返します。<br/>
@@ -50,7 +107,8 @@ trait TeaHandle implements Cloneable {
 	
 	/**
 	 * 未加工の識別キーを返します。<br/>
-	 * 識別キーはタグ名と名前を半角コロンで連結した文字列です。
+	 * 識別キーはタグ名と名前を半角コロンで連結した文字列です。<br/>
+	 * 名前を省略した場合は文字列"dflt"が使用されます。
 	 * @return 未加工の識別キー
 	 */
 	String getKeyNatural(){
@@ -60,17 +118,19 @@ trait TeaHandle implements Cloneable {
 	/**
 	 * このハンドルの階層を返します。
 	 * @return 階層
+	 * @exception IllegalStateException 上位ハンドルが設定されていません。
 	 */
 	int getLevel(){
+		if (upper == null) throw new IllegalStateException(String.format(msgs.exc.noUpper, key))
 		return upper.level + 1
 	}
 	
 	/**
 	 * このハンドルの所属する宣言を返します。
-	 * @return 宣言
+	 * @return 宣言（上位ハンドルを未設定時はnull）
 	 */
 	TeaDec getDec(){
-		return upper.dec
+		return upper?.dec
 	}
 	
 	/**
@@ -127,8 +187,10 @@ trait TeaHandle implements Cloneable {
 	/**
 	 * このハンドルの絶対パスを返します。
 	 * @return 絶対パス
+	 * @exception IllegalStateException 上位ハンドルが設定されていません。
 	 */
 	String getPath(){
+		if (upper == null) throw new IllegalStateException(String.format(msgs.exc.noUpper, key))
 		return "${upper.path}${cnst.path.level}${key}" as String
 	}
 	
@@ -195,6 +257,19 @@ trait TeaHandle implements Cloneable {
 	}
 	
 	/**
+	 * パスに対応するハンドルあるいはマップの値を文字列に変換して返します。<br/>
+	 * 値がListのときは各要素を改行コードで連結します。<br/>
+	 * それ以外のときは toStringメソッドを用います。
+	 * @param path パス
+	 * @return パスに対応するハンドルあるいはマップの値を変換した文字列
+	 * @see #refer(String)
+	 */
+	String referAsString(String path){
+		def value = refer(path)
+		return (value instanceof List)? value.join(System.lineSeparator()) : value.toString()
+	}
+	
+	/**
 	 * 未加工の識別キーの一部が正規表現とマッチする下位ハンドルのリストを取得します。<br/>
 	 * 直下の下位ハンドルのみ探します。<br/>
 	 * 再帰的にさらに下位まで探すわけではないことに注意してください。
@@ -216,6 +291,20 @@ trait TeaHandle implements Cloneable {
 	 */
 	List<TeaHandle> findAll(Closure clos){
 		return lowers.values().findAll { clos.call(it.keyNatural) }
+	}
+	
+	/**
+	 * 自身と下位のハンドルをすべて走査します。<br/>
+	 * 引数として渡されたクロージャを自身と下位のハンドルすべてで実行します。<br/>
+	 * クロージャには引数としてハンドルを渡します。<br/>
+	 * 先にクロージャを呼び、それから下位のハンドルについて再帰的に呼びます。
+	 * @param clos 引数としてハンドルを渡されるクロージャ
+	 * @return 自インスタンス
+	 */
+	TeaHandle scan(Closure clos){
+		clos.call(this)
+		lowers.values().each { it.scan(clos) }
+		return this
 	}
 	
 	/**
@@ -371,6 +460,29 @@ trait TeaHandle implements Cloneable {
 	}
 	
 	/**
+	 * このハンドルの文字列表現を返します。<br/>
+	 * 文字列表現の取得には {@link #write(Writer)}を用います。
+	 * @return 文字列表現
+	 */
+	String toString(){
+		StringWriter writer = new StringWriter()
+		write(writer)
+		return writer.toString()
+	}
+	
+	/**
+	 * マップからキーに対応する値を文字列に変換して返します。<br/>
+	 * 値がListのときは各要素を改行コードで連結します。<br/>
+	 * それ以外のときは toStringメソッドを用います。
+	 * @param key キー
+	 * @return キーに対応する値を文字列に変換した結果
+	 */
+	String asString(String key){
+		def value = getAt(key)
+		return (value instanceof List)? value.join(System.lineSeparator()) : value.toString()
+	}
+	
+	/**
 	 * テキストの文字列表現を返します。<br/>
 	 * 先頭が半角シャープで始まる行がなければ、範囲を示す区切り行は省略します。<br/>
 	 * 先頭が半角シャープで始まる行があれば、区切り行で範囲を明示します。<br/>
@@ -392,7 +504,7 @@ trait TeaHandle implements Cloneable {
 			return decideDiv("${curDiv}${cnst.tostr.textRngDivChar}")
 		}
 		
-		// 範囲を示す区切り行で挟んだ文字列表現を返す
+		// 範囲を示す区切り行で挟んだ文字列表現を返します
 		String divLine = decideDiv(cnst.tostr.textRngDiv)
 		lines.add(0, divLine)
 		lines << divLine
@@ -468,20 +580,6 @@ trait TeaHandle implements Cloneable {
 				throw new TpacHandlingException(String.format(msgs.exc.noSupportScalarString, value, value.class.name))
 		}
 		return raw
-	}
-	
-	/**
-	 * クローンを返します。
-	 * @return クローン
-	 */
-	@Override
-	TeaHandle clone(){
-		TeaHandle cloned = (TeaHandle) super.clone()
-		if (upper != null) cloned.upper = upper.clone()
-		cloned.lowers = lowers.clone()
-		cloned.comments = comments.clone()
-		cloned.map = map.clone()
-		return cloned
 	}
 	
 	/**
