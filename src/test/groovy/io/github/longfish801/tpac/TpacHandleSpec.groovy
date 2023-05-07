@@ -305,7 +305,8 @@ class TpacHandleSpec extends Specification {
 		handle.referAsString('../handle') == handleStr
 		handle.referAsString('#text') == ['aaa', 'bbb', 'ccc'].join(System.lineSeparator())
 		handle.referAsString('#str') == 'hello'
-		handle.referAsString('#null') == 'null'
+		handle.referAsString('#null') == null
+		handle.referAsString('#nosuch') == null
 	}
 	
 	def 'findAll'(){

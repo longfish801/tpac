@@ -259,13 +259,15 @@ trait TeaHandle implements Cloneable {
 	/**
 	 * パスに対応するハンドルあるいはマップの値を文字列に変換して返します。<br/>
 	 * 値がListのときは各要素を改行コードで連結します。<br/>
-	 * それ以外のときは toStringメソッドを用います。
+	 * それ以外のときは toStringメソッドを用います。<br/>
+	 * パスに対応する値が無い、あるいは nullが設定されていたときは nullを返します。
 	 * @param path パス
 	 * @return パスに対応するハンドルあるいはマップの値を変換した文字列
 	 * @see #refer(String)
 	 */
 	String referAsString(String path){
 		def value = refer(path)
+		if (value == null) return null
 		return (value instanceof List)? value.join(System.lineSeparator()) : value.toString()
 	}
 	

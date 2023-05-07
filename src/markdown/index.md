@@ -190,3 +190,6 @@ dependencies {
 
 1.1.05
 : TeaHandleクラスの asString, referAsStringメソッドについて処理方法を修正しました。
+
+1.1.06
+: TeaHandleクラスの referAsStringメソッドについて、参照先が存在しないとき nullを返すよう修正しました。
